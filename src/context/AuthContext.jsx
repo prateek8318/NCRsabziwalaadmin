@@ -9,15 +9,43 @@ export const AuthProvider = ({ children }) => {
 
   const fetchAdminProfile = async () => {
     try {
+      // First check if token exists in localStorage
+      const adminToken = localStorage.getItem("adminToken");
+      if (!adminToken) {
+        setAdmin(null);
+        setLoading(false);
+        return;
+      }
+
       const res = await axiosInstance.get("/api/admin/settings"); // Your protected route
       if (res.data.status) {
         setAdmin(res.data.data);
+      } else {
+        // Clear invalid token
+        localStorage.removeItem("adminToken");
+        setAdmin(null);
       }
     } catch (err) {
       console.log(err);
+      // Clear invalid token on error
+      localStorage.removeItem("adminToken");
       setAdmin(null);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchAdminIfNeeded = async () => {
+    const adminToken = localStorage.getItem("adminToken");
+    if (!adminToken) {
+      setAdmin(null);
+      setLoading(false);
+      return;
+    }
+
+    if (!admin) {
+      setLoading(true);
+      await fetchAdminProfile();
     }
   };
 
@@ -35,11 +63,15 @@ export const AuthProvider = ({ children }) => {
     } catch (err) {
       console.error("Admin logout failed:", err);
     }
+    // Always clear the token and admin state
+    localStorage.removeItem("adminToken");
     setAdmin(null);
   };
 
   return (
-    <AuthContext.Provider value={{ admin, adminLogin, adminLogout, loading }}>
+    <AuthContext.Provider
+      value={{ admin, adminLogin, adminLogout, loading, fetchAdminIfNeeded }}
+    >
       {children}
     </AuthContext.Provider>
   );
