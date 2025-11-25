@@ -1,0 +1,19 @@
+@import "tailwindcss";
+
+/* @media print {
+    body * {
+        visibility: hidden;
+    }
+
+    .printable-card,
+    .printable-card * {
+        visibility: visible;
+    }
+
+    .printable-card {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+    }
+} */

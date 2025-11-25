@@ -1,0 +1,32 @@
+[
+    {
+        "key": "1",
+        "categoryName": "Electronics",
+        "status": "active",
+        "image": "electronics.jpg"
+    },
+    {
+        "key": "2",
+        "categoryName": "Fashion",
+        "status": "active",
+        "image": "fashion.jpg"
+    },
+    {
+        "key": "3",
+        "categoryName": "Home & Garden",
+        "status": "active",
+        "image": "home-garden.jpg"
+    },
+    {
+        "key": "4",
+        "categoryName": "Sports",
+        "status": "active",
+        "image": "sports.jpg"
+    },
+    {
+        "key": "5",
+        "categoryName": "Books",
+        "status": "active",
+        "image": "books.jpg"
+    }
+]

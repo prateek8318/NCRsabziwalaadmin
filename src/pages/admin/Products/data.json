@@ -1,0 +1,122 @@
+[
+    {
+        "product_name": "Smartphone X1",
+        "image": "https://example.com/images/smartphone-x1.jpg",
+        "category": "Electronics",
+        "subcategory": "Mobile Phones",
+        "brand": "TechBrand",
+        "sku": "TBX1-001",
+        "original_price": 799.99,
+        "selling_price": 699.99,
+        "vendor_name": "Vendor A",
+        "status": "Available"
+    },
+    {
+        "product_name": "Laptop Pro 15",
+        "image": "https://example.com/images/laptop-pro15.jpg",
+        "category": "Electronics",
+        "subcategory": "Laptops",
+        "brand": "CompTech",
+        "sku": "CTLP15-002",
+        "original_price": 1299.99,
+        "selling_price": 1199.99,
+        "vendor_name": "Vendor B",
+        "status": "Available"
+    },
+    {
+        "product_name": "Wireless Headphones",
+        "image": "https://example.com/images/wireless-headphones.jpg",
+        "category": "Audio",
+        "subcategory": "Headphones",
+        "brand": "SoundMax",
+        "sku": "SMWH-003",
+        "original_price": 199.99,
+        "selling_price": 149.99,
+        "vendor_name": "Vendor C",
+        "status": "Out of Stock"
+    },
+    {
+        "product_name": "4K Ultra HD TV",
+        "image": "https://example.com/images/4k-uhd-tv.jpg",
+        "category": "Electronics",
+        "subcategory": "Televisions",
+        "brand": "ViewSharp",
+        "sku": "VS4KTV-004",
+        "original_price": 999.99,
+        "selling_price": 899.99,
+        "vendor_name": "Vendor D",
+        "status": "Available"
+    },
+    {
+        "product_name": "Gaming Console Z",
+        "image": "https://example.com/images/gaming-console-z.jpg",
+        "category": "Gaming",
+        "subcategory": "Consoles",
+        "brand": "PlayMaster",
+        "sku": "PMZ-005",
+        "original_price": 499.99,
+        "selling_price": 449.99,
+        "vendor_name": "Vendor E",
+        "status": "Available"
+    },
+    {
+        "product_name": "Smartwatch Series 5",
+        "image": "https://example.com/images/smartwatch-series5.jpg",
+        "category": "Wearables",
+        "subcategory": "Smartwatches",
+        "brand": "TimeTech",
+        "sku": "TSTS5-006",
+        "original_price": 299.99,
+        "selling_price": 279.99,
+        "vendor_name": "Vendor F",
+        "status": "Available"
+    },
+    {
+        "product_name": "Digital Camera ZX",
+        "image": "https://example.com/images/digital-camera-zx.jpg",
+        "category": "Photography",
+        "subcategory": "Cameras",
+        "brand": "SnapShot",
+        "sku": "SSZXCAM-007",
+        "original_price": 549.99,
+        "selling_price": 499.99,
+        "vendor_name": "Vendor G",
+        "status": "Out of Stock"
+    },
+    {
+        "product_name": "Bluetooth Speaker Mini",
+        "image": "https://example.com/images/bluetooth-speaker-mini.jpg",
+        "category": "Audio",
+        "subcategory": "Speakers",
+        "brand": "BeatBox",
+        "sku": "BBM-008",
+        "original_price": 89.99,
+        "selling_price": 79.99,
+        "vendor_name": "Vendor H",
+        "status": "Available"
+    },
+    {
+        "product_name": "Home Theater System",
+        "image": "https://example.com/images/home-theater-system.jpg",
+        "category": "Electronics",
+        "subcategory": "Audio Systems",
+        "brand": "CinemaSound",
+        "sku": "CSHTS-009",
+        "original_price": 699.99,
+        "selling_price": 649.99,
+        "vendor_name": "Vendor I",
+        "status": "Available"
+    },
+    {
+        "product_name": "Fitness Tracker Pro",
+        "image": "https://example.com/images/fitness-tracker-pro.jpg",
+        "category": "Wearables",
+        "subcategory": "Fitness Trackers",
+        "brand": "FitLife",
+        "sku": "FLFTP-010",
+        "original_price": 129.99,
+        "selling_price": 99.99,
+        "vendor_name": "Vendor J",
+        "status": "Available"
+    }
+]

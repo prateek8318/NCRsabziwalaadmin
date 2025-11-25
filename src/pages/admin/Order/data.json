@@ -1,0 +1,36 @@
+[
+    {
+        "booking_id": "123456",
+        "delivery_date": "2025-05-08",
+        "delivery_time": "10:30 AM",
+        "status": "Confirmed",
+        "items": [
+            {
+                "id": 1,
+                "name": "Chicken Biryani",
+                "quantity": 2,
+                "price": 150
+            },
+            {
+                "id": 2,
+                "name": "Butter Naan",
+                "quantity": 4,
+                "price": 40
+            }
+        ],
+        "shop": {
+            "name": "Tandoori Hub",
+            "address": "Street 45, Food Plaza, Delhi"
+        },
+        "vendor": {
+            "name": "Mr. Sharma",
+            "phone": "9876543210"
+        },
+        "payment": {
+            "method": "UPI",
+            "status": "Paid",
+            "total": 520,
+            "txn_id": "TXN456789"
+        }
+    }
+]

@@ -1,0 +1,34 @@
+[
+    {
+        "username": "john001",
+        "name": "John Doe",
+        "email": "john@example.com",
+        "phone": "9876543210",
+        "image": "",
+        "status": false
+    },
+    {
+        "username": "jane002",
+        "name": "Jane Smith",
+        "email": "jane@example.com",
+        "phone": "9876511220",
+        "image": "",
+        "status": true
+    },
+    {
+        "username": "amit003",
+        "name": "Amit Verma",
+        "email": "amit@example.com",
+        "phone": "9876001122",
+        "image": "",
+        "status": true
+    },
+    {
+        "username": "rita004",
+        "name": "Rita Kaur",
+        "email": "rita@example.com",
+        "phone": "9988776655",
+        "image": "",
+        "status": false
+    }
+]

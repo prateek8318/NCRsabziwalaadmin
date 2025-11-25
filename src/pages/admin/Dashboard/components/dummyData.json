@@ -1,0 +1,90 @@
+{
+    "overview": {
+        "today": 1500,
+        "week": 10450,
+        "month": 45000,
+        "year": 180000
+    },
+    "salesGraph": {
+        "sales": [
+            200,
+            450,
+            700,
+            300,
+            600,
+            800,
+            900
+        ]
+    },
+    "userStatus": {
+        "active": 120,
+        "inactive": 30,
+        "paid": 90,
+        "unpaid": 60,
+        "newUsers": 15
+    },
+    "transactions": [
+        {
+            "name": "Andrew James",
+            "id": "INV45478",
+            "amount": 589.15
+        },
+        {
+            "name": "John Carter",
+            "id": "INV45477",
+            "amount": -300.12
+        },
+        {
+            "name": "Sophia White",
+            "id": "INV45476",
+            "amount": 566.00
+        },
+        {
+            "name": "Daniel Martinez",
+            "id": "INV45475",
+            "amount": 474.22
+        },
+        {
+            "name": "Amelia Robinson",
+            "id": "INV45474",
+            "amount": 337.79
+        }
+    ],
+    "newUsers": [
+        {
+            "name": "Emily Clark",
+            "avatar": "https://via.placeholder.com/48",
+            "quotationId": "QU0014",
+            "status": "Accepted",
+            "date": "25 Mar 2025"
+        },
+        {
+            "name": "David Anderson",
+            "avatar": "https://via.placeholder.com/48",
+            "quotationId": "QU0147",
+            "status": "Sent",
+            "date": "12 Feb 2025"
+        },
+        {
+            "name": "Sophia White",
+            "avatar": "https://via.placeholder.com/48",
+            "quotationId": "QU1947",
+            "status": "Expired",
+            "date": "08 Mar 2025"
+        },
+        {
+            "name": "Michael Johnson",
+            "avatar": "https://via.placeholder.com/48",
+            "quotationId": "QU0284",
+            "status": "Declined",
+            "date": "31 Jan 2025"
+        },
+        {
+            "name": "Emma Clark",
+            "avatar": "https://via.placeholder.com/48",
+            "quotationId": "QU7868",
+            "status": "Accepted",
+            "date": "18 Jan 2025"
+        }
+    ]
+}
