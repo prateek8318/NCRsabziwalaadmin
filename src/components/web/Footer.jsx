@@ -29,7 +29,7 @@ function Footer({ data }) {
                     </motion.div>
 
                     {/* Quick Links */}
-                    <motion.div
+                    {/* <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.1 }}
@@ -58,7 +58,7 @@ function Footer({ data }) {
                                 </li>
                             ))}
                         </ul>
-                    </motion.div>
+                    </motion.div> */}
 
                     {/* Legal */}
                     <motion.div
@@ -76,9 +76,9 @@ function Footer({ data }) {
                                 // { label: 'Terms of Service', href: '/cms/term' },
                                 // { label: 'Privacy Policy', href: '/cms/privacy' },
                                 // { label: 'Return Policy', href: '/cms/returnPolicy' },
-                                { label: 'Terms of Service', href: '#' },
-                                { label: 'Privacy Policy', href: '#' },
-                                { label: 'Return Policy', href: '#' },
+                                { label: 'Terms of Service', href: '/terms-service' },
+                                { label: 'Privacy Policy', href: '/privacy-policy' },
+                                { label: 'Return Policy', href: '/return-policy' },
                             ].map((item) => (
                                 <li key={item.label}>
                                     {/* <motion.a
@@ -154,7 +154,7 @@ function Footer({ data }) {
                         © {new Date().getFullYear()} {data.brandName}. All rights reserved.
                     </div>
 
-                    <div className="flex items-center gap-4">
+                    {/* <div className="flex items-center gap-4">
                         <motion.a
                             href="#"
                             className="text-green-300 hover:text-green-100 transition-colors"
@@ -179,7 +179,7 @@ function Footer({ data }) {
                             <span className="sr-only">Instagram</span>
                             📸
                         </motion.a>
-                    </div>
+                    </div> */}
                 </motion.div>
             </div>
 

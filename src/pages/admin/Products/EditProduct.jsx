@@ -181,13 +181,50 @@ const EditProduct = () => {
               <Form.Item
                 name="name"
                 label="Product Name"
+                // normalize={(value) => value?.trim()}
                 rules={[
                   { required: true, message: "Please enter product name!" },
+
+                  // Length checks
                   {
-                    pattern: /^[a-zA-Z0-9\- ]+$/,
-                    message:
-                      "Only letters, numbers, hyphens (-), and spaces are allowed!",
+                    min: 3,
+                    message: "Product name must be at least 3 characters",
                   },
+                  {
+                    max: 80,
+                    message: "Product name cannot exceed 80 characters",
+                  },
+
+                  // Allowed characters
+                  {
+                    pattern: /^[A-Za-z0-9 ]+$/,
+                    message: "Only letters, numbers and spaces are allowed",
+                  },
+
+                  // Custom validations
+                  () => ({
+                    validator(_, value) {
+                      if (!value) return Promise.resolve();
+
+                      // Only numbers
+                      if (/^\d+$/.test(value)) {
+                        return Promise.reject(
+                          new Error("Product name cannot contain only numbers")
+                        );
+                      }
+
+                      // Only spaces
+                      if (!value.trim()) {
+                        return Promise.reject(
+                          new Error(
+                            "Product name cannot be empty or spaces only"
+                          )
+                        );
+                      }
+
+                      return Promise.resolve();
+                    },
+                  }),
                 ]}
               >
                 <Input placeholder="e.g., Organic Basmati Rice" />

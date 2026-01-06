@@ -36,20 +36,15 @@ function Home() {
 
     return (
         <>
-            <title>NCR Sabziwala</title>
-            <div className="font-sans text-gray-800">
-                <Header data={settingData} loading={loading} />
-                <Hero />
-                <Features />
-                {/* <HowItWorks /> */}
-                {/* <VendorBenefits /> */}
-                {/* <CustomerBenefits /> */}
-                <AppDownload />
-                {/* <Testimonials /> */}
-                {/* <FAQ /> */}
-                {/* <Contact /> */}
-                <Footer data={settingData} />
-            </div>
+            <Hero />
+            <Features />
+            {/* <HowItWorks /> */}
+            {/* <VendorBenefits /> */}
+            {/* <CustomerBenefits /> */}
+            <AppDownload />
+            {/* <Testimonials /> */}
+            {/* <FAQ /> */}
+            {/* <Contact /> */}
         </>
     )
 }

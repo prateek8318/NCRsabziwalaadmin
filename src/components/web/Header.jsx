@@ -12,9 +12,9 @@ export default function Header({ data, loading }) {
 
     const menu = [
         { label: 'Home', href: '/' },
-        { label: 'Features', href: '#features' },
-        { label: 'Customers', href: '#customers' },
-        { label: 'Contact', href: '#contact' },
+        // { label: 'Features', href: '#features' },
+        // { label: 'Customers', href: '#customers' },
+        // { label: 'Contact', href: '#contact' },
     ];
 
     return (

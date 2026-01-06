@@ -35,21 +35,29 @@ import ExploreSectionTable from "./pages/admin/Explore/components/ExploreSection
 import AddProduct from "./pages/admin/Products/AddProduct";
 import EditProduct from "./pages/admin/Products/EditProduct";
 import AdminPublicRoute from "./components/AdminPublicRoute";
+import PrivacyPolicy from "./pages/web/privacyPolicy/PrivacyPolicyPage";
+import Layout from "./layout/Layout";
+import ReturnPolicy from "./pages/web/ReturnPolicyPage";
+import TermsOfServicePage from "./pages/web/TermsOfServicePage";
 
 function App() {
   return (
     <>
       <Routes>
-        <Route index element={<LandingPage />} />
-        <Route path="/cms/:page" element={<Cms />} />
+        <Route path="/" element={<Layout />}>
+          <Route index element={<LandingPage />} />
+          <Route path="/cms/:page" element={<Cms />} />
+          <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+          <Route path="/return-policy" element={<ReturnPolicy />} />
+          <Route path="/terms-service" element={<TermsOfServicePage />} />
+        </Route>
 
         {/* admin route */}
         <Route
           path="/admin/login"
           element={
             <AdminPublicRoute>
-              {" "}
-              <Login />{" "}
+              <Login />
             </AdminPublicRoute>
           }
         />
@@ -57,8 +65,7 @@ function App() {
           path="/admin"
           element={
             <AdminPrivateRoute>
-              {" "}
-              <AdminLayout />{" "}
+              <AdminLayout />
             </AdminPrivateRoute>
           }
         >
@@ -70,7 +77,7 @@ function App() {
           <Route path="product/:produtSlug" element={<ProductDetails />} />
           <Route path="category" element={<Category />} />
           <Route path="category/:categoryId" element={<SubCategory />} />
-          <Route path="coupon" element={<Coupon />} />
+          <Route path="coupons" element={<Coupon />} />
           <Route path="driver" element={<Driver />} />
           <Route path="products/:produtSlug" element={<ProductDetails />} />
           <Route path="product-flags" element={<ProductFlags />} />

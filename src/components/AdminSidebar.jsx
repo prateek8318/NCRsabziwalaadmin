@@ -25,6 +25,8 @@ import { FaArrowRightToBracket } from "react-icons/fa6";
 import { RiCoupon3Line, RiMastercardLine } from "react-icons/ri";
 import { RiEBike2Fill } from "react-icons/ri";
 import { useAuth } from "../context/AuthContext";
+import { MdLocalOffer } from "react-icons/md";
+import { FaCompass } from "react-icons/fa";
 
 const AdminSidebar = ({ collapsed, settingData }) => {
   const navigate = useNavigate();
@@ -62,10 +64,16 @@ const AdminSidebar = ({ collapsed, settingData }) => {
       onClick: () => navigate("/admin/banner"),
     },
     {
-      key: "deals",
-      icon: <GiTakeMyMoney size={18} />,
-      label: "Deals",
-      onClick: () => navigate("/admin/deals"),
+      key: "coupons",
+      icon: <MdLocalOffer size={18} />,
+      label: "Coupons",
+      onClick: () => navigate("/admin/coupons"),
+    },
+    {
+      key: "Explore Section",
+      icon: <FaCompass size={18} />,
+      label: "Explore Section",
+      onClick: () => navigate("/admin/explore"),
     },
     {
       key: "master",
@@ -111,12 +119,12 @@ const AdminSidebar = ({ collapsed, settingData }) => {
           label: "Site",
           onClick: () => navigate("/admin/settings/charges"),
         },
-        {
-          key: "coupon",
-          icon: <RiCoupon3Line size={18} />,
-          label: "Coupon",
-          onClick: () => navigate("/admin/coupon"),
-        },
+        // {
+        //   key: "coupon",
+        //   icon: <RiCoupon3Line size={18} />,
+        //   label: "Coupon",
+        //   onClick: () => navigate("/admin/coupon"),
+        // },
         {
           key: "user-cms",
           icon: <FaUserClock size={18} />,

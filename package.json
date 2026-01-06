@@ -23,6 +23,7 @@
     "antd": "^5.24.6",
     "antd-img-crop": "^4.25.0",
     "axios": "^1.8.4",
+    "dayjs": "^1.11.19",
     "leaflet": "^1.9.4",
     "leaflet-geosearch": "^4.2.0",
     "lightningcss": "^1.30.1",
