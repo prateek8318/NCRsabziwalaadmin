@@ -10,6 +10,7 @@ const Product = () => {
     const [products, setProducts] = useState([]);
     const [searchText, setSearchText] = useState('');
     const navigate = useNavigate()
+    
 
     const fetchProduct = async () => {
         setLoading(true);

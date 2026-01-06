@@ -38,32 +38,33 @@ const OrderTable = ({ searchText, onDelete, type }) => {
       dataIndex: "orderId",
       key: "orderId",
       align: "center",
+      render: (orderId) => (orderId ? `${orderId}` : "N/A"),
     },
-    {
-      title: "Delivery Date",
-      dataIndex: "deliveryDate",
-      key: "deliveryDate",
-      align: "center",
-      render: (deliveryDate) =>
-        `${deliveryDate ? convertDate(deliveryDate) : "N/A"}`,
-    },
-    {
-      title: "Delivery Time",
-      dataIndex: "deliveryTime",
-      key: "deliveryTime",
-      align: "center",
-    },
+    // {
+    //   title: "Delivery Date",
+    //   dataIndex: "deliveryDate",
+    //   key: "deliveryDate",
+    //   align: "center",
+    //   render: (deliveryDate) =>
+    //     `${deliveryDate ? convertDate(deliveryDate) : "N/A"}`,
+    // },
+    // {
+    //   title: "Delivery Time",
+    //   dataIndex: "deliveryTime",
+    //   key: "deliveryTime",
+    //   align: "center",
+    // },
     {
       title: "Total Amount",
-      dataIndex: "finalAmount",
-      key: "finalAmount",
+      dataIndex: "grandTotal",
+      key: "grandTotal",
       align: "center",
       render: (amount) => (amount ? `₹${amount}` : "N/A"),
     },
     {
       title: "Order Status",
-      dataIndex: "orderStatus",
-      key: "orderStatus",
+      dataIndex: "status",
+      key: "status",
       align: "center",
       render: (status) => (
         <Tag
@@ -96,21 +97,35 @@ const OrderTable = ({ searchText, onDelete, type }) => {
     },
     {
       title: "Payment Mode",
-      dataIndex: "paymentMode",
-      key: "paymentMode",
+      dataIndex: "paymentMethod",
+      key: "paymentMethod",
       align: "center",
+      render: (paymentMethod) => (
+        <Tag
+          color={
+            paymentMethod === "cod"
+              ? "gray"
+              : paymentMethod === "wallet"
+              ? "gray"
+              : "green"
+          }
+        >
+          {paymentMethod?.toUpperCase()}
+        </Tag>
+      ),
     },
     {
       title: "Assigned To",
       dataIndex: "assignedDriver",
       key: "assignedDriver",
       align: "center",
-      render: (assignedDriver) =>
-        assignedDriver ? (
-          <Tag color="green">{assignedDriver}</Tag>
-        ) : (
-          <Tag color="red">Not Assigned</Tag>
-        ),
+      render: () => (
+        // assignedDriver ? (
+        //   <Tag color="green">{assignedDriver}</Tag>
+        // ) : (
+        <Tag color="red">Not Assigned</Tag>
+      ),
+      // ),
     },
     {
       title: "Action",
