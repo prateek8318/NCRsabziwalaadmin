@@ -76,7 +76,7 @@ function Hero() {
                                     rel="noopener noreferrer"
                                     className='cursor-pointer'
                                 >
-                                    <button className="bg-green-500 hover:bg-green-400 text-white px-8 py-4 rounded-2xl font-bold text-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
+                                    <button className="bg-green-500 cursor-pointer hover:bg-green-400 text-white px-8 py-4 rounded-2xl font-bold text-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
                                         Download App Now
                                         <span className="ml-3">🍎</span>
                                     </button>

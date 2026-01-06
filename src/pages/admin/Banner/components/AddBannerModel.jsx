@@ -116,9 +116,46 @@ const AddBannerModel = ({ isModalOpen, handleOk, handleCancel }) => {
                 <Form.Item
                     label="Banner Title"
                     name="title"
-                    rules={[{ required: true, message: 'Please input the banner title!' }, { pattern: /^[a-zA-Z0-9\- ]+$/, message: 'Only letters, numbers, hyphens (-), and spaces are allowed!' }]}
+                    // normalize={(value) => value?.trim()}
+                    rules={[
+                        { required: true, message: "Please input the banner title!" },
+
+                        // Min & Max length
+                        { min: 3, message: "Banner title must be at least 3 characters" },
+                        { max: 50, message: "Banner title cannot exceed 50 characters" },
+
+                        // Allow letters, numbers & spaces ONLY
+                        {
+                            pattern: /^[A-Za-z0-9 ]+$/,
+                            message: "Only letters, numbers and spaces are allowed",
+                        },
+
+                        // Custom validation
+                        () => ({
+                            validator(_, value) {
+                                if (!value) return Promise.resolve();
+
+                                // Reject numbers only
+                                if (/^\d+$/.test(value)) {
+                                    return Promise.reject(
+                                        new Error("Banner title cannot contain only numbers")
+                                    );
+                                }
+
+                                // Reject only spaces
+                                if (!value.trim()) {
+                                    return Promise.reject(
+                                        new Error("Banner title cannot be empty or spaces only")
+                                    );
+                                }
+
+                                return Promise.resolve();
+                            },
+                        }),
+                    ]}
                 >
-                    <Input placeholder="Enter banner title" />
+                    <Input placeholder="Enter banner title" maxLength={50}
+                        autoComplete="off" />
                 </Form.Item>
 
                 <Form.Item

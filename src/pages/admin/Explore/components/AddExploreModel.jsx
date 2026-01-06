@@ -1,41 +1,69 @@
-import React, { useState, useCallback } from 'react';
-import { Modal, Form, Input, message, Upload, Button, Select } from 'antd';
-import { UploadOutlined } from '@ant-design/icons';
-import { addExplore } from '../../../../services/admin/apiExplore';
+import React, { useState, useCallback } from "react";
+import {
+  Modal,
+  Form,
+  Input,
+  message,
+  Upload,
+  Button,
+  Select,
+  InputNumber,
+  Spin,
+} from "antd";
+import { UploadOutlined } from "@ant-design/icons";
+import { addExplore } from "../../../../services/admin/apiExplore";
+import { useFetchProducts } from "../hooks/useFetchProducts";
 
-function AddExploreModal({ isModalOpen, handleOk, handleCancel, fetchExplore }) {
+function AddExploreModal({
+  isModalOpen,
+  handleOk,
+  handleCancel,
+  fetchExplore,
+}) {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
-  const [iconFileList, setIconFileList] = useState([]);
-  const [bannerFileList, setBannerFileList] = useState([]);
+  const [imageFile, setImageFile] = useState([]);
+  const [productSearch, setProductSearch] = useState("");
+  const { productLoading, productOptions } = useFetchProducts({
+    search: productSearch,
+    setSearch: setProductSearch,
+    flag: isModalOpen,
+  });
 
   const resetState = useCallback(() => {
     form.resetFields();
-    setIconFileList([]);
-    setBannerFileList([]);
+    setImageFile([]);
   }, [form]);
 
   const handleSubmit = async (values) => {
-    if (!iconFileList.length || !bannerFileList.length) {
-      return message.error('Icon and banner are required.');
+    if (!imageFile.length) {
+      return message.error("Image is required!");
     }
 
+    const selectedProducts = values.products || [];
+
     const formData = new FormData();
-    formData.append('name', values.name);
-    formData.append('couponCode', values.couponCode);
-    formData.append('serviceId', values.serviceId);
-    formData.append('icon', iconFileList[0].originFileObj);
-    formData.append('banner', bannerFileList[0].originFileObj);
+    formData.append("name", values.name);
+    formData.append("exploreId", "68b31d5845a4e5225b56ce18");
+    formData.append("image", imageFile[0].originFileObj);
+    formData.append("discountType", values.discountType);
+    formData.append("discountValue", values.discountValue);
+
+    selectedProducts.forEach((element) => {
+      formData.append("products", element);
+    });
 
     try {
       setLoading(true);
       const res = await addExplore(formData);
-      message.success(res.message || 'Explore created successfully.');
+      message.success(res.message || "Explore created successfully.");
       resetState();
       handleOk();
       fetchExplore();
     } catch (error) {
-      message.error(error?.response?.data?.message || 'Failed to create explore.');
+      message.error(
+        error?.response?.data?.message || "Failed to create explore."
+      );
     } finally {
       setLoading(false);
     }
@@ -53,56 +81,73 @@ function AddExploreModal({ isModalOpen, handleOk, handleCancel, fetchExplore }) 
       confirmLoading={loading}
       okText="Add Explore"
     >
-      <Form
-        form={form}
-        layout="vertical"
-        onFinish={handleSubmit}
-      >
+      <Form form={form} layout="vertical" onFinish={handleSubmit}>
         <Form.Item
           label="Name"
           name="name"
-          rules={[{ required: true, message: 'Please enter name' }]}
+          rules={[{ required: true, message: "Please enter name" }]}
         >
           <Input placeholder="e.g. Explore Offers" />
         </Form.Item>
 
         <Form.Item
-          label="Coupon Code"
-          name="couponCode"
-          rules={[{ required: true, message: 'Please enter coupon code' }]}
+          label="Discount Type"
+          name="discountType"
+          rules={[{ required: true, message: "Please select a discount type" }]}
         >
-          <Input placeholder="e.g. SAVE50" />
-        </Form.Item>
-        <Form.Item name="serviceId" label="Service Type" rules={[{ required: true }]}>
-          <Select placeholder="Select service">
-            <Option value="67ecc79120a93fc0b92a8b19">Food</Option>
-            <Option value="67ecc79a20a93fc0b92a8b1b">Grocery</Option>
+          <Select placeholder="Select discount type">
+            <Option value="percentage">Percentage</Option>
+            <Option value="fixed">Fixed</Option>
           </Select>
         </Form.Item>
 
-        <Form.Item label="Icon" required>
-          <Upload
-            accept="image/*"
-            listType="picture"
-            fileList={iconFileList}
-            beforeUpload={() => false}
-            onChange={({ fileList }) => setIconFileList(fileList)}
-            onRemove={() => setIconFileList([])}
-          >
-            <Button icon={<UploadOutlined />}>Upload Icon</Button>
-          </Upload>
+        <Form.Item
+          label="Discount Value"
+          name="discountValue"
+          rules={[
+            { required: true, message: "Please enter the discount value" },
+          ]}
+        >
+          <InputNumber
+            min={1}
+            style={{ width: "100%" }}
+            placeholder="e.g. 80"
+          />
         </Form.Item>
 
-        <Form.Item label="Banner" required>
+        <Form.Item
+          label="Products"
+          name="products"
+          rules={[
+            { required: true, message: "Please select at least one product" },
+          ]}
+        >
+          <Select
+            mode="multiple"
+            placeholder="Search & select products"
+            showSearch
+            filterOption={false}
+            notFoundContent={productLoading ? <Spin size="small" /> : null}
+            onSearch={(value) => setProductSearch(value)}
+            loading={productLoading}
+            options={productOptions}
+            optionFilterProp="label"
+            style={{ width: "100%" }}
+          />
+        </Form.Item>
+
+        <Form.Item label="Image" required>
           <Upload
             accept="image/*"
             listType="picture"
-            fileList={bannerFileList}
+            fileList={imageFile}
             beforeUpload={() => false}
-            onChange={({ fileList }) => setBannerFileList(fileList)}
-            onRemove={() => setBannerFileList([])}
+            onChange={({ fileList }) => setImageFile(fileList)}
+            onRemove={() => setImageFile([])}
           >
-            <Button icon={<UploadOutlined />} loading={loading}>Upload Banner</Button>
+            <Button icon={<UploadOutlined />} loading={loading}>
+              Upload Image
+            </Button>
           </Upload>
         </Form.Item>
       </Form>

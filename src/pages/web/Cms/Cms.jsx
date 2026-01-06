@@ -38,16 +38,13 @@ function Cms() {
     }
 
     useEffect(() => { fetchSetting() }, [])
+    
     return (
-        <>
-            <title>NCR Sabziwala</title>
-            <Header data={settingData} loading={loading} />
-            <div className='p-2 m-2'>
-                <h1 className='text-3xl my-2'>{pageName}</h1>
-                {/* <pre>{data}</pre> */}
-                <div className="whitespace-pre-line">{data}</div>
-            </div>
-            <Footer data={settingData} />
+        <><div className='p-2 m-2'>
+            <h1 className='text-3xl my-2'>{pageName}</h1>
+            {/* <pre>{data}</pre> */}
+            <div className="whitespace-pre-line">{data}</div>
+        </div>
         </>
     )
 }
