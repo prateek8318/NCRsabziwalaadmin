@@ -88,6 +88,21 @@ export const assignDriverToOrder = async (orderId, driverId) => {
     }
 }
 
+// Update Order Status API
+export const updateOrderStatus = async (orderId, status) => {
+    try {
+        console.log('API: Updating order status:', orderId, 'to:', status);
+        const response = await axiosInstance.patch(`/api/admin/order/status/${orderId}`, { status });
+        console.log('API: Status update response:', response.data);
+        message.success(`Order status updated to ${status.toUpperCase()} successfully`);
+        return response.data;
+    } catch (error) {
+        console.error('API: Error updating order status:', error);
+        message.error(error.response?.data?.message || 'Error updating order status');
+        throw error;
+    }
+}
+
 // --------- working ---------
 // export const changeOrderStatus = async (id, data) => {
 //     // console.log(id, data);

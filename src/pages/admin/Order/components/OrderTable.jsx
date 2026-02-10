@@ -1,8 +1,9 @@
-import { Button, message, Space, Table, Tag } from "antd";
+import { Button, message, Space, Table, Tag, Dropdown, Modal } from "antd";
 import { FaTrash, FaUserTie } from "react-icons/fa";
+import { FaCheckCircle } from "react-icons/fa";
 import { IoMdEye } from "react-icons/io";
 import { useNavigate } from "react-router";
-import { getAllOrder } from "../../../../services/admin/apiOrder";
+import { getAllOrder, updateOrderStatus } from "../../../../services/admin/apiOrder";
 import { useEffect, useState } from "react";
 import { convertDate } from "../../../../utils/formatDate";
 import DriverAssignmentModal from "./DriverAssignmentModal";
@@ -13,6 +14,7 @@ const OrderTable = ({ searchText, onDelete, type }) => {
   const [loading, setLoading] = useState(false);
   const [assignmentModalVisible, setAssignmentModalVisible] = useState(false);
   const [selectedOrderId, setSelectedOrderId] = useState(null);
+  const [statusUpdateLoading, setStatusUpdateLoading] = useState(null);
 
   useEffect(() => {
     fetchOrderList(type);
@@ -43,6 +45,47 @@ const OrderTable = ({ searchText, onDelete, type }) => {
 
   const handleAssignmentSuccess = () => {
     fetchOrderList(type); // Refresh the order list
+  };
+
+  const handleStatusUpdate = async (orderId, newStatus) => {
+    setStatusUpdateLoading(orderId);
+    try {
+      await updateOrderStatus(orderId, newStatus);
+      // Refresh all tabs to show orders in correct categories
+      fetchOrderList(type); // Refresh current tab
+      // If order moved to a different status, we might need to refresh other tabs too
+      // For now, just refresh current tab
+    } catch (error) {
+      // Error is already handled in the API function
+    } finally {
+      setStatusUpdateLoading(null);
+    }
+  };
+
+  const getStatusUpdateItems = (record) => {
+    const currentStatus = record.status;
+    const statusFlow = {
+      'pending': [
+        { key: 'processing', label: 'Start Processing', status: 'processing' },
+        { key: 'cancelled', label: 'Cancel Order', status: 'cancelled', danger: true }
+      ],
+      'processing': [
+        { key: 'shipped', label: 'Mark as Shipped', status: 'shipped' },
+        { key: 'cancelled', label: 'Cancel Order', status: 'cancelled', danger: true }
+      ],
+      'shipped': [
+        { key: 'delivered', label: 'Mark as Delivered', status: 'delivered' }
+      ],
+      'delivered': [],
+      'cancelled': []
+    };
+
+    return (statusFlow[currentStatus] || []).map(item => ({
+      key: item.key,
+      label: item.label,
+      danger: item.danger || false,
+      onClick: () => handleStatusUpdate(record._id, item.status)
+    }));
   };
 
   const columns = [
@@ -144,45 +187,60 @@ const OrderTable = ({ searchText, onDelete, type }) => {
       dataIndex: "assignedDriver",
       key: "assignedDriver",
       align: "center",
-      render: () => (
-        // assignedDriver ? (
-        //   <Tag color="green">{assignedDriver}</Tag>
-        // ) : (
-        <Tag color="red">Not Assigned</Tag>
+      render: (_, record) => (
+        record.assignedDriver?.name ? (
+          <Tag color="green">{record.assignedDriver.name}</Tag>
+        ) : (
+          <Tag color="red">Not Assigned</Tag>
+        )
       ),
-      // ),
     },
     {
       title: "Action",
       key: "action",
       align: "center",
-      render: (_, record) => (
-        <Space size="small">
-          <Button
-            type="primary"
-            icon={<IoMdEye />}
-            onClick={() => handleViewDetails(record)}
-          >
-            View
-          </Button>
-          {type === 'ready' && !record.assignedDriver && (
+      render: (_, record) => {
+        const statusItems = getStatusUpdateItems(record);
+        return (
+          <Space size="small">
             <Button
-              type="default"
-              icon={<FaUserTie />}
-              onClick={() => handleAssignDriver(record)}
-              style={{ backgroundColor: '#52c41a', borderColor: '#52c41a' }}
+              type="primary"
+              icon={<IoMdEye />}
+              onClick={() => handleViewDetails(record)}
             >
-              Assign Driver
+              View
             </Button>
-          )}
-          {/* <Button
-                        type="primary"
-                        danger
-                        icon={<FaTrash />}
-                        onClick={() => onDelete(record)}
-                    /> */}
-        </Space>
-      ),
+            
+            {statusItems.length > 0 && (
+              <Dropdown
+                menu={{ items: statusItems }}
+                trigger={['click']}
+                placement="bottomRight"
+              >
+                <Button
+                  type="default"
+                  icon={<FaCheckCircle />}
+                  loading={statusUpdateLoading === record._id}
+                  style={{ backgroundColor: '#52c41a', borderColor: '#52c41a', color: 'white' }}
+                >
+                  Update Status
+                </Button>
+              </Dropdown>
+            )}
+            
+            {(record.status === 'shipped' || (record.status === 'processing' && record.assignedDriver === false)) && !record.assignedDriver && (
+              <Button
+                type="default"
+                icon={<FaUserTie />}
+                onClick={() => handleAssignDriver(record)}
+                style={{ backgroundColor: '#1890ff', borderColor: '#1890ff', color: 'white' }}
+              >
+                Assign Driver
+              </Button>
+            )}
+          </Space>
+        );
+      },
     },
   ];
 

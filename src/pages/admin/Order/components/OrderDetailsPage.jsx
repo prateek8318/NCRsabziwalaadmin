@@ -12,12 +12,15 @@ import {
   Space,
   Row,
   Col,
+  Tag,
+  Dropdown,
 } from "antd";
 import { useParams } from "react-router";
 import {
   getOrderDetails,
-  getAllDrivers,
-  assignDriver,
+  updateOrderStatus,
+  getAvailableDriversForOrder,
+  assignDriverToOrder,
   downloadInvoice,
 } from "../../../../services/admin/apiOrder";
 import { DownloadOutlined } from "@ant-design/icons";
@@ -31,6 +34,7 @@ const OrderDetailsPage = () => {
   const [drivers, setDrivers] = useState([]);
   const [selectedDriver, setSelectedDriver] = useState(null);
   const [assigning, setAssigning] = useState(false);
+  const [statusUpdateLoading, setStatusUpdateLoading] = useState(false);
 
   const { orderId } = useParams();
 
@@ -39,8 +43,10 @@ const OrderDetailsPage = () => {
       try {
         const response = await getOrderDetails(id);
         setOrder(response.order);
-        // const driverResponse = await getAllDrivers(id);
-        // setDrivers(driverResponse.data || []);
+        
+        // Fetch available drivers for this order
+        const driversResponse = await getAvailableDriversForOrder(id);
+        setDrivers(driversResponse.data || []);
       } catch (error) {
         message.error("Failed to load data.");
       } finally {
@@ -59,7 +65,7 @@ const OrderDetailsPage = () => {
 
     setAssigning(true);
     try {
-      await assignDriver(orderId, selectedDriver);
+      await assignDriverToOrder(orderId, selectedDriver);
       message.success("Driver assigned successfully!");
       setOrder((prev) => ({
         ...prev,
@@ -70,6 +76,44 @@ const OrderDetailsPage = () => {
     } finally {
       setAssigning(false);
     }
+  };
+
+  const handleStatusUpdate = async (newStatus) => {
+    setStatusUpdateLoading(true);
+    try {
+      await updateOrderStatus(orderId, newStatus);
+      setOrder((prev) => ({ ...prev, status: newStatus }));
+    } catch (error) {
+      // Error is already handled in the API function
+    } finally {
+      setStatusUpdateLoading(false);
+    }
+  };
+
+  const getStatusUpdateItems = () => {
+    const currentStatus = order.status;
+    const statusFlow = {
+      'pending': [
+        { key: 'processing', label: 'Start Processing', status: 'processing' },
+        { key: 'cancelled', label: 'Cancel Order', status: 'cancelled', danger: true }
+      ],
+      'processing': [
+        { key: 'shipped', label: 'Mark as Shipped', status: 'shipped' },
+        { key: 'cancelled', label: 'Cancel Order', status: 'cancelled', danger: true }
+      ],
+      'shipped': [
+        { key: 'delivered', label: 'Mark as Delivered', status: 'delivered' }
+      ],
+      'delivered': [],
+      'cancelled': []
+    };
+
+    return (statusFlow[currentStatus] || []).map(item => ({
+      key: item.key,
+      label: item.label,
+      danger: item.danger || false,
+      onClick: () => handleStatusUpdate(item.status)
+    }));
   };
 
   if (loading) {
@@ -144,13 +188,55 @@ const OrderDetailsPage = () => {
                 {order.deliveryTime}
               </Descriptions.Item> */}
               <Descriptions.Item label="Status">
-                {order?.status || "N/A"}
+                <Tag
+                  color={
+                    order.status === "delivered"
+                      ? "green"
+                      : order.status === "out_for_delivery" || order.status === "processing"
+                      ? "blue"
+                      : order.status === "shipped"
+                      ? "purple"
+                      : order.status === "accepted"
+                      ? "cyan"
+                      : order.status === "ready"
+                      ? "orange"
+                      : order.status === "cancelled"
+                      ? "red"
+                      : "default"
+                  }
+                >
+                  {order.status?.toUpperCase().replace('_', ' ')}
+                </Tag>
+              </Descriptions.Item>
+              <Descriptions.Item label="Actions">
+                <Space>
+                  {(() => {
+                    const statusItems = getStatusUpdateItems();
+                    return statusItems.length > 0 ? (
+                      <Dropdown
+                        menu={{ items: statusItems }}
+                        trigger={['click']}
+                        placement="bottomLeft"
+                      >
+                        <Button
+                          type="primary"
+                          size="small"
+                          loading={statusUpdateLoading}
+                        >
+                          Update Status
+                        </Button>
+                      </Dropdown>
+                    ) : null;
+                  })()}
+                </Space>
               </Descriptions.Item>
               <Descriptions.Item label="Payment Mode">
                 {order.paymentMethod.toUpperCase()}
               </Descriptions.Item>
               <Descriptions.Item label="Payment Status">
-                {order.paymentStatus}
+                <Tag color={order.paymentStatus === 'paid' ? 'green' : 'orange'}>
+                  {order.paymentStatus?.toUpperCase()}
+                </Tag>
               </Descriptions.Item>
               <Descriptions.Item label="Driver">
                 {order.assignedDriver?.name || (
@@ -159,7 +245,7 @@ const OrderDetailsPage = () => {
               </Descriptions.Item>
             </Descriptions>
 
-            {order.orderStatus == "ready" && !order.assignedDriver && (
+            {(order.status === 'shipped' || (order.status === 'processing' && !order.assignedDriver)) && !order.assignedDriver && (
               <Space style={{ marginTop: 16 }}>
                 <Select
                   style={{ width: 250 }}
