@@ -42,6 +42,7 @@ function AdminLayout() {
         'grocery-product': 'Grocery Products',
         category: 'Category',
         'sub-category': 'Sub Category',
+        subcategory: 'Sub Category',
         vendor: 'Vendors',
         user: 'Users',
         settings: 'Settings',

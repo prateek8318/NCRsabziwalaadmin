@@ -77,6 +77,7 @@ function App() {
           <Route path="product/:produtSlug" element={<ProductDetails />} />
           <Route path="category" element={<Category />} />
           <Route path="category/:categoryId" element={<SubCategory />} />
+          <Route path="subcategory/:categoryId" element={<SubCategory />} />
           <Route path="coupons" element={<Coupon />} />
           <Route path="driver" element={<Driver />} />
           <Route path="products/:produtSlug" element={<ProductDetails />} />
