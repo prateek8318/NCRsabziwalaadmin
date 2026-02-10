@@ -54,8 +54,37 @@ export const assignDriver = async (id, driverId) => {
         // console.log(response)
         return response.data;
     } catch (error) {
-        // console.log(error)
+        console.error('API: Error assigning driver:', error);
         message.error(error.response.data.message || 'Error assigning order');
+        throw error;
+    }
+}
+
+// New Driver Assignment APIs
+export const getAvailableDriversForOrder = async (orderId) => {
+    try {
+        console.log('API: Getting available drivers for order:', orderId);
+        const response = await axiosInstance.get(`/api/admin/order/${orderId}/driverlist`);
+        console.log('API: Available drivers response:', response.data);
+        return response.data;
+    } catch (error) {
+        console.error('API: Error fetching available drivers:', error);
+        message.error('Error fetching available drivers');
+        throw error;
+    }
+}
+
+export const assignDriverToOrder = async (orderId, driverId) => {
+    try {
+        console.log('API: Assigning driver:', driverId, 'to order:', orderId);
+        const response = await axiosInstance.patch(`/api/admin/order/assign/${orderId}`, { driverId });
+        console.log('API: Assignment response:', response.data);
+        message.success('Order assigned to driver successfully');
+        return response.data;
+    } catch (error) {
+        console.error('API: Error assigning driver to order:', error);
+        message.error('Error assigning driver to order');
+        throw error;
     }
 }
 

@@ -2,10 +2,9 @@ import {
     Avatar, Badge, Button, Input, InputNumber, message,
     Modal, Space, Spin, Switch, Table, Tag, Tooltip
 } from 'antd';
-import { FaEdit, FaTrash, FaUserTie } from 'react-icons/fa';
+import { FaEdit, FaTrash, FaUserTie, FaEye, FaCheckCircle } from 'react-icons/fa';
 import { useState } from 'react';
-import { updateDriverStatus } from '../../../../services/admin/apiDrivers';
-import { settleWallet } from '../../../../services/admin/apiWallet'; // Make sure this is appropriate
+import { toggleDriverBlock, toggleDriverVerification, settleDriverWallet } from '../../../../services/admin/apiDriver';
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
 const DriverTable = ({ searchText, data, onEdit, onDelete, loading, onSettleSuccess }) => {
@@ -14,6 +13,53 @@ const DriverTable = ({ searchText, data, onEdit, onDelete, loading, onSettleSucc
     const [settleAmount, setSettleAmount] = useState(0);
     const [remarks, setRemarks] = useState('');
     const [settleType, setSettleType] = useState('wallet'); // 'wallet' or 'cash'
+    const [togglingDriver, setTogglingDriver] = useState(null); // Track which driver is being toggled
+
+    const handleBlockToggle = async (driverId, isBlocked) => {
+        console.log('Toggling block for driver:', driverId, 'current status:', isBlocked, 'new status:', !isBlocked);
+        try {
+            console.log('Calling toggleDriverBlock API with driverId:', driverId);
+            setTogglingDriver(driverId); // Set driver being toggled
+            
+            // Immediately update the local data for visual feedback
+            const updatedData = data.map(driver => 
+                driver._id === driverId 
+                    ? { ...driver, isBlocked: !isBlocked }
+                    : driver
+            );
+            
+            const response = await toggleDriverBlock(driverId);
+            console.log('toggleDriverBlock API response:', response);
+            setTogglingDriver(null); // Clear toggling state
+            message.success("Driver block status updated successfully");
+            console.log('Block toggle successful, refreshing driver data...');
+            if (onSettleSuccess) onSettleSuccess();
+        } catch (error) {
+            setTogglingDriver(null); // Clear toggling state on error
+            console.error('Error in block toggle:', error);
+            message.error("Failed to update driver block status");
+        }
+    };
+
+    const handleVerificationToggle = async (driverId, isRegistered) => {
+        console.log('Toggling verification for driver:', driverId, 'current status:', isRegistered, 'new status:', !isRegistered);
+        try {
+            // Immediately update the local data for visual feedback
+            const updatedData = data.map(driver => 
+                driver._id === driverId 
+                    ? { ...driver, isVerified: !isRegistered }
+                    : driver
+            );
+            
+            await toggleDriverVerification(driverId, !isRegistered);
+            message.success("Driver verification status updated successfully");
+            console.log('Verification toggle successful, refreshing driver data...');
+            if (onSettleSuccess) onSettleSuccess();
+        } catch (error) {
+            console.error('Error in verification toggle:', error);
+            message.error("Failed to update driver verification status");
+        }
+    };
 
     const openSettleModal = (driver, type = 'wallet') => {
         setSelectedDriver(driver);
@@ -24,28 +70,22 @@ const DriverTable = ({ searchText, data, onEdit, onDelete, loading, onSettleSucc
     };
 
     const handleSettle = async () => {
-        const currentAmount = settleType === 'wallet' ? selectedDriver?.wallet_balance : selectedDriver?.cashCollection;
-        if (settleAmount !== currentAmount) {
-            message.error("Settle total amount in single time");
-            return;
-        }
-
-        const payload = {
-            amount: settleAmount,
-            remark: settleType == "wallet" ? `Driver Wallet Setlment ${remarks}` : `Cash Order Setlment ${remarks}`,
-            type: settleType
-        };
-
         try {
-            await settleWallet(payload, selectedDriver._id); // Adjust API to handle driver + type
+            console.log('Settling wallet for driver:', selectedDriver._id, 'amount:', settleAmount, 'remarks:', remarks);
+            await settleDriverWallet(selectedDriver._id, settleAmount, remarks);
             message.success("Settlement done successfully");
             setIsSettleModalVisible(false);
-            if (onSettleSuccess) onSettleSuccess(selectedDriver._id);
+            if (onSettleSuccess) onSettleSuccess();
         } catch (error) {
             console.error("Settlement error:", error);
-            message.error("Failed to settle amount");
-        } finally {
-            onSettleSuccess()
+            // Show more specific error message based on error status
+            if (error.response?.status === 400) {
+                message.error("Invalid settlement request. Please check the amount and remarks.");
+            } else if (error.response?.status === 404) {
+                message.error("Driver not found or settlement endpoint not available.");
+            } else {
+                message.error("Failed to settle amount. Please try again.");
+            }
         }
     };
 
@@ -97,9 +137,25 @@ const DriverTable = ({ searchText, data, onEdit, onDelete, loading, onSettleSucc
             align: 'center',
             render: (status) => (
                 <Tag color={status === 'active' ? 'green' : 'red'}>
-                    {status?.toUpperCase()}
+                    {status ? String(status).toUpperCase() : 'UNKNOWN'}
                 </Tag>
             ),
+        },
+        {
+            title: 'Verification',
+            dataIndex: 'isVerified',
+            key: 'isVerified',
+            align: "center",
+            render: (_, record) => (
+                <Tooltip title={record.isVerified ? "Verified" : "Not Verified"}>
+                    <Switch
+                        key={`verification-${record._id}-${record.isVerified}`}
+                        checked={record?.isVerified}
+                        onChange={() => handleVerificationToggle(record._id, record.isVerified)}
+                        unCheckedChildren="?"
+                    />
+                </Tooltip>
+            )
         },
         {
             title: 'Block',
@@ -108,8 +164,17 @@ const DriverTable = ({ searchText, data, onEdit, onDelete, loading, onSettleSucc
             align: "center",
             render: (_, record) => (
                 <Switch
-                    defaultChecked={record?.isBlocked}
-                    onChange={(checked) => updateDriverStatus(record._id, checked)}
+                    key={`block-${record._id}-${record.isBlocked}`}
+                    checked={record?.isBlocked}
+                    onChange={(checked) => handleBlockToggle(record._id, checked)}
+                    checkedChildren=""
+                    unCheckedChildren=""
+                    style={{
+                        backgroundColor: record?.isBlocked ? '#1890ff' : '#d9d9d9',
+                        '& .ant-switch-handle': {
+                            backgroundColor: record?.isBlocked ? '#1890ff' : '#d9d9d9',
+                        }
+                    }}
                 />
             )
         },
@@ -151,10 +216,40 @@ const DriverTable = ({ searchText, data, onEdit, onDelete, loading, onSettleSucc
                 </Space>
             )
         },
+        {
+            title: 'Actions',
+            key: 'actions',
+            align: "center",
+            render: (_, record) => (
+                <Space>
+                    <Tooltip title="View Details">
+                        <Button
+                            type="primary"
+                            icon={<FaEye />}
+                            onClick={() => onEdit(record)}
+                            size="small"
+                        />
+                    </Tooltip>
+                    <Tooltip title="Delete Driver">
+                        <Button
+                            type="primary"
+                            danger
+                            icon={<FaTrash />}
+                            onClick={() => onDelete(record)}
+                            size="small"
+                        />
+                    </Tooltip>
+                </Space>
+            )
+        },
     ];
 
     const filteredData = data.filter((item) =>
-        item?.name?.toLowerCase().includes(searchText.toLowerCase())
+        item?.name?.toLowerCase().includes(searchText.toLowerCase()) ||
+        item?.vehicle?.type?.toLowerCase().includes(searchText.toLowerCase()) ||
+        item?.vehicle?.model?.toLowerCase().includes(searchText.toLowerCase()) ||
+        item?.vehicle?.registrationNumber?.toLowerCase().includes(searchText.toLowerCase()) ||
+        item?.licenseNumber?.toLowerCase().includes(searchText.toLowerCase())
     );
 
     return (
@@ -163,6 +258,7 @@ const DriverTable = ({ searchText, data, onEdit, onDelete, loading, onSettleSucc
                 dataSource={filteredData}
                 columns={columns}
                 rowKey="_id"
+                key={Date.now()} // Force re-render
                 scroll={{ x: true }}
                 bordered={false}
                 size="small"

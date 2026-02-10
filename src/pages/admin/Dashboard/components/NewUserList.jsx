@@ -30,6 +30,8 @@ function StatusTag({ status }) {
 }
 
 function NewUserList({ data, loading }) {
+    console.log('NewUserList data:', data);
+    
     return (
         <Card
             title={<span style={{ fontWeight: 700, fontSize: 18 }}>New User</span>}
@@ -63,7 +65,7 @@ function NewUserList({ data, loading }) {
                                 }
                                 title={
                                     <span style={{ fontWeight: 600, color: '#222', fontSize: 16 }}>
-                                        {item.name}
+                                        {item.name || item.fullName || item.username || item.email || 'Unknown User'}
                                     </span>
                                 }
                                 description={
@@ -75,7 +77,7 @@ function NewUserList({ data, loading }) {
                             <div style={{ textAlign: 'right', minWidth: 120 }}>
                                 {/* <StatusTag status={item.status} /> */}
                                 <div style={{ marginTop: 6, color: '#757575', fontSize: 15 }}>
-                                    {item.mobileNo}
+                                    {item.mobileNo || item.phone || item.phoneNumber || 'No Phone'}
                                 </div>
                             </div>
                         </List.Item>

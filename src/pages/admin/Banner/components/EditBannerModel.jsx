@@ -14,9 +14,9 @@ const EditBannerModel = ({
   const [imageUrl, setImageUrl] = useState();
 
   const beforeUpload = (file) => {
-    const isJpgOrPng = file.type === "image/jpeg" || file.type === "image/png";
+    const isJpgOrPng = file.type === "image/jpeg" || file.type === "image/png" || file.type === "image/jpg";
     if (!isJpgOrPng) {
-      message.error("You can only upload JPG/PNG files!");
+      message.error("You can only upload JPG, JPEG, or PNG files!");
       return false;
     }
     const isLt10M = file.size / 1024 / 1024 < 10;
@@ -170,24 +170,32 @@ const EditBannerModel = ({
           />
         </Form.Item>
         <Form.Item label="Category Image" name="image">
-          <Upload
-            name="image"
-            listType="picture-card"
-            className="avatar-uploader"
-            showUploadList={false}
-            beforeUpload={beforeUpload}
-            onChange={handleChange}
-          >
-            {imageUrl ? (
-              <img
-                src={imageUrl}
-                alt="Preview"
-                style={{ width: "100%", height: "100%", objectFit: "cover" }}
-              />
-            ) : (
-              uploadButton
-            )}
-          </Upload>
+          <div>
+            <Upload
+              name="image"
+              listType="picture-card"
+              className="avatar-uploader"
+              showUploadList={false}
+              beforeUpload={beforeUpload}
+              onChange={handleChange}
+            >
+              {imageUrl ? (
+                <img
+                  src={imageUrl}
+                  alt="Preview"
+                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                />
+              ) : (
+                uploadButton
+              )}
+            </Upload>
+            <div style={{ fontSize: '12px', color: '#888', marginTop: '8px' }}>
+              <strong>Recommended Size:</strong> 320 x 150 px
+            </div>
+            <div style={{ fontSize: '12px', color: '#888' }}>
+              <strong>Allowed Formats:</strong> JPG, JPEG, PNG (Max 10MB)
+            </div>
+          </div>
         </Form.Item>
       </Form>
     </Modal>

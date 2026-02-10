@@ -53,12 +53,20 @@ const BannerTable = ({ searchText, onEdit, onDelete, data, loading }) => {
       align: "right",
       render: (_, record) => (
         <Space size="small">
-          {/* <Button type="primary" icon={<FaEdit />} onClick={() => onEdit(record)}>Edit</Button> */}
+          <Button 
+            type="primary" 
+            icon={<FaEdit />} 
+            onClick={() => onEdit(record)}
+            size="small"
+          >
+            Edit
+          </Button>
           <Button
             type="primary"
             danger
             icon={<FaTrash />}
             onClick={() => onDelete(record)}
+            size="small"
           >
             Delete
           </Button>
@@ -81,6 +89,14 @@ const BannerTable = ({ searchText, onEdit, onDelete, data, loading }) => {
       size="small"
       className="lg:px-10 px-5"
       loading={loading}
+      pagination={{
+        showSizeChanger: true,
+        showQuickJumper: true,
+        showTotal: (total, range) => 
+          `${range[0]}-${range[1]} of ${total} items`,
+        pageSizeOptions: ['10', '20', '50', '100'],
+        defaultPageSize: 10,
+      }}
     />
   );
 };

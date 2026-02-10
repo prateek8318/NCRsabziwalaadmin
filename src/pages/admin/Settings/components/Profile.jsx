@@ -1,21 +1,35 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Avatar, Card, Form, Input, Button, Upload, message, Breadcrumb } from 'antd';
 import { UserOutlined, EditOutlined, SaveOutlined } from '@ant-design/icons';
 import { Link } from 'react-router';
+import axiosInstance from '@utils/axiosInstance';
 
 function Profile() {
     const [isEditing, setIsEditing] = useState(false);
     const [form] = Form.useForm();
+    const [profileData, setProfileData] = useState({});
+    const [loading, setLoading] = useState(false);
 
-    // Mock data - replace with actual data from your backend
-    const [profileData, setProfileData] = useState({
-        name: 'Admin User',
-        email: 'admin@example.com',
-        phone: '+1 234 567 890',
-        address: '123 Admin Street, Admin City',
-        bio: 'Administrator of the system',
-        avatar: 'https://gw.alipayobjects.com/zos/rmsportal/KDpgvguMpGfqaHPjicRK.svg'
-    });
+    useEffect(() => {
+        fetchProfile();
+    }, []);
+
+    const fetchProfile = async () => {
+        setLoading(true);
+        try {
+            const response = await axiosInstance.get('/api/admin/profile');
+            console.log('Profile API response:', response.data);
+            if (response.data.success) {
+                setProfileData(response.data.data);
+                form.setFieldsValue(response.data.data);
+            }
+        } catch (error) {
+            console.error('Error fetching profile:', error);
+            message.error('Failed to load profile data');
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const handleEdit = () => {
         setIsEditing(true);
@@ -25,22 +39,32 @@ function Profile() {
     const handleSave = async () => {
         try {
             const values = await form.validateFields();
-            setProfileData(values);
-            setIsEditing(false);
-            message.success('Profile updated successfully!');
+            console.log('Saving profile data:', values);
+            
+            const response = await axiosInstance.patch('/api/admin/profile', values);
+            console.log('Profile update response:', response.data);
+            
+            if (response.data.success) {
+                setProfileData(values);
+                setIsEditing(false);
+                message.success('Profile updated successfully!');
+            } else {
+                message.error(response.data.message || 'Failed to update profile');
+            }
         } catch (error) {
-            console.error('Validation failed:', error);
+            console.error('Profile update error:', error);
+            message.error('Failed to update profile');
         }
     };
 
     return (
         <>
             <div className="p-6">
-                <Card className="max-w-3xl mx-auto">
+                <Card className="max-w-3xl mx-auto" loading={loading}>
                     <div className="flex flex-col items-center mb-8">
                         <Avatar
                             size={120}
-                            src={profileData.avatar}
+                            src={profileData.avatar ? `${import.meta.env.VITE_BASE_URL}/${profileData.avatar}` : undefined}
                             icon={<UserOutlined />}
                             className="mb-4"
                         />

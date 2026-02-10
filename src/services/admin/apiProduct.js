@@ -16,7 +16,14 @@ export const addProduct = async (formData) => {
 
 export const getAllProducts = async (paramsString) => {
   let url = "/api/admin/product/list";
-  if (paramsString) url += paramsString;
+  if (paramsString) {
+    // Check if paramsString already starts with '?'
+    if (paramsString.startsWith('?')) {
+      url += paramsString;
+    } else {
+      url += '?' + paramsString;
+    }
+  }
   const response = await axiosInstance(url);
   return response.data;
 };

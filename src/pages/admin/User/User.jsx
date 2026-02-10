@@ -16,9 +16,12 @@ function User() {
         setLoading(true);
         try {
             const res = await getAllUser();
-            setUser(res.data);
-        } catch {
+            console.log('Users API response:', res);
+            setUser(res.data || []);
+        } catch (error) {
+            console.error('Error fetching users:', error);
             message.error("Failed to load user.");
+            setUser([]);
         } finally {
             setLoading(false);
         }

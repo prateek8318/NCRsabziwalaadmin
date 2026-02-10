@@ -46,7 +46,7 @@ const CategoryTable = ({ searchText, data, onEdit, onDelete, loading }) => {
             align: "right",
             render: (_, record) => (
                 <Space size="small">
-                    <Button type="primary" icon={<FaEye />} onClick={() => navigate(`${record._id}`)}>Sub category</Button>
+                    <Button type="primary" icon={<FaEye />} onClick={() => navigate(`/admin/subcategory/${record._id}`)}>Sub category</Button>
                     <Button type="primary" icon={<FaEdit />} onClick={() => onEdit(record)}>Edit</Button>
                     <Button type="primary" danger icon={<FaTrash />} onClick={() => onDelete(record)}>Delete</Button>
                 </Space>

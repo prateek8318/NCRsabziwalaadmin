@@ -26,6 +26,7 @@ const EditExploreModal = ({
   // const [bannerUrl, setBannerUrl] = useState(null);
   const [imageUrl, setImageUrl] = useState(null);
   const [productSearch, setProductSearch] = useState("");
+  const [originalValues, setOriginalValues] = useState({});
   const { productLoading, productOptions } = useFetchProducts({
     search: productSearch,
     setSearch: setProductSearch,
@@ -34,14 +35,16 @@ const EditExploreModal = ({
 
   useEffect(() => {
     if (exploreData) {
-      form.setFieldsValue({
+      const values = {
         name: exploreData.name,
         discountType: exploreData.discountType,
         discountValue: exploreData.discountValue,
         products: Array.isArray(exploreData.products)
           ? exploreData.products.map((p) => p._id)
           : [],
-      });
+      };
+      form.setFieldsValue(values);
+      setOriginalValues(values);
       // setIconUrl(exploreData.icon ? `${BASE_URL}/${exploreData.icon}` : null);
       // setBannerUrl(
       //   exploreData.bannerImg ? `${BASE_URL}/${exploreData.bannerImg}` : null
@@ -80,6 +83,18 @@ const EditExploreModal = ({
   );
 
   const handleFinish = (values) => {
+    // Check if any changes were made
+    const hasChanges = 
+      values.name !== originalValues.name ||
+      values.discountType !== originalValues.discountType ||
+      values.discountValue !== originalValues.discountValue ||
+      JSON.stringify(values.products?.sort()) !== JSON.stringify(originalValues.products?.sort());
+
+    if (!hasChanges) {
+      message.warning("No changes made to update!");
+      return;
+    }
+
     const selectedProducts = values.products || [];
     const formData = new FormData();
     formData.append("name", values.name);

@@ -22,9 +22,11 @@ function SubCategory() {
         setLoading(true);
         try {
             const data = await getAllSubCategory(categoryId);
-            setSubcategories(data);
-        } catch {
+            setSubcategories(data || []);
+        } catch (error) {
+            console.error('Error fetching subcategories:', error);
             message.error('Failed to load subcategories.');
+            setSubcategories([]);
         } finally {
             setLoading(false);
         }

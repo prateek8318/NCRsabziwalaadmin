@@ -1,15 +1,18 @@
 import { Button, message, Space, Table, Tag } from "antd";
-import { FaTrash } from "react-icons/fa";
+import { FaTrash, FaUserTie } from "react-icons/fa";
 import { IoMdEye } from "react-icons/io";
 import { useNavigate } from "react-router";
 import { getAllOrder } from "../../../../services/admin/apiOrder";
 import { useEffect, useState } from "react";
 import { convertDate } from "../../../../utils/formatDate";
+import DriverAssignmentModal from "./DriverAssignmentModal";
 
 const OrderTable = ({ searchText, onDelete, type }) => {
   const navigate = useNavigate();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [assignmentModalVisible, setAssignmentModalVisible] = useState(false);
+  const [selectedOrderId, setSelectedOrderId] = useState(null);
 
   useEffect(() => {
     fetchOrderList(type);
@@ -19,6 +22,7 @@ const OrderTable = ({ searchText, onDelete, type }) => {
     setLoading(true);
     try {
       const res = await getAllOrder(type);
+      console.log('Orders API response:', res);
       setOrders(res.orders || []);
     } catch (error) {
       console.log(error);
@@ -32,13 +36,26 @@ const OrderTable = ({ searchText, onDelete, type }) => {
     navigate(`/admin/order/${record._id}`);
   };
 
+  const handleAssignDriver = (record) => {
+    setSelectedOrderId(record._id);
+    setAssignmentModalVisible(true);
+  };
+
+  const handleAssignmentSuccess = () => {
+    fetchOrderList(type); // Refresh the order list
+  };
+
   const columns = [
     {
       title: "Order ID",
       dataIndex: "orderId",
       key: "orderId",
       align: "center",
-      render: (orderId) => (orderId ? `${orderId}` : "N/A"),
+      render: (_, record) => {
+        const orderId = record.orderId || record._id || record.id || record.orderNumber;
+        console.log('Order record:', record, 'Order ID:', orderId);
+        return orderId ? `${orderId}` : "N/A";
+      },
     },
     // {
     //   title: "Delivery Date",
@@ -71,12 +88,20 @@ const OrderTable = ({ searchText, onDelete, type }) => {
           color={
             status === "delivered"
               ? "green"
-              : status === "accepted"
+              : status === "out_for_delivery" || status === "processing"
               ? "blue"
-              : "orange"
+              : status === "shipped"
+              ? "purple"
+              : status === "accepted"
+              ? "cyan"
+              : status === "ready"
+              ? "orange"
+              : status === "cancelled"
+              ? "red"
+              : "default"
           }
         >
-          {status?.toUpperCase()}
+          {status?.toUpperCase().replace('_', ' ')}
         </Tag>
       ),
     },
@@ -137,7 +162,19 @@ const OrderTable = ({ searchText, onDelete, type }) => {
             type="primary"
             icon={<IoMdEye />}
             onClick={() => handleViewDetails(record)}
-          />
+          >
+            View
+          </Button>
+          {type === 'ready' && !record.assignedDriver && (
+            <Button
+              type="default"
+              icon={<FaUserTie />}
+              onClick={() => handleAssignDriver(record)}
+              style={{ backgroundColor: '#52c41a', borderColor: '#52c41a' }}
+            >
+              Assign Driver
+            </Button>
+          )}
           {/* <Button
                         type="primary"
                         danger
@@ -156,15 +193,24 @@ const OrderTable = ({ searchText, onDelete, type }) => {
   );
 
   return (
-    <Table
-      dataSource={filteredItem}
-      columns={columns}
-      rowKey="_id"
-      scroll={{ x: true }}
-      bordered
-      size="small"
-      loading={loading}
-    />
+    <>
+      <Table
+        dataSource={filteredItem}
+        columns={columns}
+        rowKey="_id"
+        scroll={{ x: true }}
+        bordered
+        size="small"
+        loading={loading}
+      />
+
+      <DriverAssignmentModal
+        visible={assignmentModalVisible}
+        orderId={selectedOrderId}
+        onCancel={() => setAssignmentModalVisible(false)}
+        onSuccess={handleAssignmentSuccess}
+      />
+    </>
   );
 };
 

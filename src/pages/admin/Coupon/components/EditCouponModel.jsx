@@ -18,10 +18,11 @@ const { Option } = Select;
 function EditCouponModel({ isModalOpen, handleOk, handleCancel, couponData }) {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
+  const [originalValues, setOriginalValues] = useState({});
 
   useEffect(() => {
     if (couponData) {
-      form.setFieldsValue({
+      const values = {
         code: couponData.code,
         discountType: couponData.discountType,
         discountValue: couponData.discountValue,
@@ -31,13 +32,31 @@ function EditCouponModel({ isModalOpen, handleOk, handleCancel, couponData }) {
         expiryDate: couponData.expiryDate
           ? moment(couponData.expiryDate)
           : null,
-      });
+      };
+      form.setFieldsValue(values);
+      setOriginalValues(values);
     } else {
       form.resetFields();
+      setOriginalValues({});
     }
   }, [couponData, form]);
 
   const handleSubmit = async (values) => {
+    // Check if any changes were made
+    const hasChanges = 
+      values.code !== originalValues.code ||
+      values.discountType !== originalValues.discountType ||
+      values.discountValue !== originalValues.discountValue ||
+      values.minOrderAmount !== originalValues.minOrderAmount ||
+      values.usageLimit !== originalValues.usageLimit ||
+      values.startDate?.toISOString() !== originalValues.startDate?.toISOString() ||
+      values.expiryDate?.toISOString() !== originalValues.expiryDate?.toISOString();
+
+    if (!hasChanges) {
+      message.warning("No changes made to update!");
+      return;
+    }
+
     setLoading(true);
     try {
       const payload = {

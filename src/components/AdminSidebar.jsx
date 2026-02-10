@@ -107,6 +107,12 @@ const AdminSidebar = ({ collapsed, settingData }) => {
       label: "User",
       onClick: () => navigate("/admin/user"),
     },
+    {
+      key: "driver",
+      icon: <RiEBike2Fill size={18} />,
+      label: "Driver",
+      onClick: () => navigate("/admin/driver"),
+    },
 
     {
       key: "settings",
@@ -160,9 +166,13 @@ const AdminSidebar = ({ collapsed, settingData }) => {
       key: "logout",
       icon: <FaArrowRightToBracket size={18} />,
       label: "Logout",
-      onClick: () => {
-        adminLogout();
-        navigate("/admin/login");
+      onClick: async () => {
+        // Clear all navigation state before logout
+        setOpenKeys([]);
+        
+        await adminLogout();
+        // Clear all navigation state and redirect immediately
+        window.location.href = "/admin/login";
       },
     },
   ];

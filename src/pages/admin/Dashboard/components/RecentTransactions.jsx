@@ -2,6 +2,8 @@ import { Card, List, Avatar, Badge } from 'antd';
 import { DollarCircleOutlined } from '@ant-design/icons';
 
 function RecentTransactions({ data, loading }) {
+    console.log('RecentTransactions data:', data);
+    
     const statusColorMap = {
         pending: 'orange',
         accepted: 'blue',
@@ -59,17 +61,17 @@ function RecentTransactions({ data, loading }) {
                                 }
                                 title={
                                     <span style={{ fontWeight: 600, color: '#222' }}>
-                                        {item.orderId}
+                                        {item.orderId || item._id || item.id || `Order #${item.orderNumber || 'N/A'}`}
                                     </span>
                                 }
                                 description={
                                     <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                                         <Badge
-                                            color={statusColorMap[item.orderStatus?.toLowerCase()] || 'gray'}
-                                            text={item.orderStatus}
+                                            color={statusColorMap[item.orderStatus?.toLowerCase() || item.status?.toLowerCase() || 'gray']}
+                                            text={item.orderStatus || item.status || 'Unknown'}
                                         />
                                         <span style={{ color: '#1890ff', fontWeight: 500 }}>
-                                            ₹{item.finalAmount}
+                                            ₹{item.finalAmount || item.totalAmount || item.amount || item.total || '0'}
                                         </span>
                                     </span>
                                 }

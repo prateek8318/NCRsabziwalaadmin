@@ -1,6 +1,5 @@
 import { Avatar, Button, Space, Switch, Table, Tag } from 'antd'
 import { FaEdit, FaTrash, FaUser } from 'react-icons/fa';
-import dataSource from '../data.json'
 import { IoMdEye } from 'react-icons/io';
 import { useNavigate } from 'react-router';
 const BASE_URL = import.meta.env.VITE_BASE_URL;
@@ -77,7 +76,7 @@ const UserTable = ({ searchText, onDelete, data }) => {
     };
 
     return <Table
-        dataSource={data.filter(item => item.mobileNo.toLowerCase().includes(searchText.toLowerCase()))}
+        dataSource={data.filter(item => item?.mobileNo?.toLowerCase().includes(searchText.toLowerCase()))}
         // dataSource={transformedData}
         columns={columns}
         rowKey="id"

@@ -59,13 +59,40 @@ export const AuthProvider = ({ children }) => {
 
   const adminLogout = async () => {
     try {
-      await axiosInstance.post("/api/admin/logout");
+      // Clear auth data before API call
+      localStorage.removeItem("adminToken");
+      setAdmin(null);
+      
+      const response = await axiosInstance.post("/api/admin/logout");
+      console.log('Logout API response:', response.data);
+      
+      if (response.data.success) {
+        console.log('Logout successful');
+        // Use proper notification system if available
+        if (typeof message !== 'undefined') {
+          message.success('Logged out successfully');
+        } else {
+          alert('Logged out successfully');
+        }
+        
+        // Add small delay to ensure notification appears before redirect
+        setTimeout(() => {
+          window.location.href = "/admin/login";
+        }, 500);
+      }
     } catch (err) {
       console.error("Admin logout failed:", err);
+      if (typeof message !== 'undefined') {
+        message.error('Logout failed');
+      } else {
+        alert('Logout failed');
+      }
+      
+      // Still redirect on error
+      setTimeout(() => {
+        window.location.href = "/admin/login";
+      }, 500);
     }
-    // Always clear the token and admin state
-    localStorage.removeItem("adminToken");
-    setAdmin(null);
   };
 
   return (

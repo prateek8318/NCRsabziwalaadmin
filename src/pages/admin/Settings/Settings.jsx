@@ -13,8 +13,8 @@ function Settings() {
                 tabPosition="top"
                 items={[
                     {
-                        label: 'Profile',
-                        key: '1',
+                        label: 'My Account',
+                        key: 'account',
                         children: <Profile />,
                     },
                     {
