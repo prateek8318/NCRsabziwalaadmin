@@ -74,9 +74,20 @@ const OrderTable = ({ searchText, onDelete, type }) => {
         { key: 'cancelled', label: 'Cancel Order', status: 'cancelled', danger: true }
       ],
       'shipped': [
-        { key: 'delivered', label: 'Mark as Delivered', status: 'delivered' }
+        { key: 'delivered', label: 'Mark as Delivered', status: 'delivered' },
+        { key: 'returned_requested', label: 'Return Requested', status: 'returned_requested', danger: true }
       ],
-      'delivered': [],
+      'delivered': [
+        { key: 'returned_requested', label: 'Return Requested', status: 'returned_requested', danger: true }
+      ],
+      'returned_requested': [
+        { key: 'return_approved', label: 'Approve Return', status: 'return_approved' },
+        { key: 'cancelled', label: 'Reject Return', status: 'cancelled', danger: true }
+      ],
+      'return_approved': [
+        { key: 'returned', label: 'Mark as Returned', status: 'returned' }
+      ],
+      'returned': [],
       'cancelled': []
     };
 
@@ -131,14 +142,16 @@ const OrderTable = ({ searchText, onDelete, type }) => {
           color={
             status === "delivered"
               ? "green"
-              : status === "out_for_delivery" || status === "processing"
+              : status === "processing"
               ? "blue"
               : status === "shipped"
               ? "purple"
-              : status === "accepted"
-              ? "cyan"
-              : status === "ready"
+              : status === "returned_requested"
               ? "orange"
+              : status === "return_approved"
+              ? "cyan"
+              : status === "returned"
+              ? "magenta"
               : status === "cancelled"
               ? "red"
               : "default"
@@ -187,13 +200,19 @@ const OrderTable = ({ searchText, onDelete, type }) => {
       dataIndex: "assignedDriver",
       key: "assignedDriver",
       align: "center",
-      render: (_, record) => (
-        record.assignedDriver?.name ? (
-          <Tag color="green">{record.assignedDriver.name}</Tag>
+      render: (_, record) => {
+        // Check multiple possible structures for assigned driver
+        const driverName = record.assignedDriver?.name || 
+                          record.driver?.name || 
+                          record.assignedDriverId?.name ||
+                          record.driverId?.name;
+        
+        return driverName ? (
+          <Tag color="green">{driverName}</Tag>
         ) : (
           <Tag color="red">Not Assigned</Tag>
-        )
-      ),
+        );
+      },
     },
     {
       title: "Action",
@@ -228,7 +247,8 @@ const OrderTable = ({ searchText, onDelete, type }) => {
               </Dropdown>
             )}
             
-            {(record.status === 'shipped' || (record.status === 'processing' && record.assignedDriver === false)) && !record.assignedDriver && (
+            {(record.status === 'processing' || record.status === 'shipped') && 
+             !(record.assignedDriver?.name || record.driver?.name || record.assignedDriverId?.name || record.driverId?.name) && (
               <Button
                 type="default"
                 icon={<FaUserTie />}

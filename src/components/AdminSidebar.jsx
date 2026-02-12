@@ -23,7 +23,7 @@ import {
 import { GiTakeMyMoney } from "react-icons/gi";
 import { FaArrowRightToBracket } from "react-icons/fa6";
 import { RiCoupon3Line, RiMastercardLine } from "react-icons/ri";
-import { RiEBike2Fill } from "react-icons/ri";
+import { RiEBike2Fill, RiAlarmWarningLine, RiFileWarningLine } from 'react-icons/ri';
 import { useAuth } from "../context/AuthContext";
 import { MdLocalOffer } from "react-icons/md";
 import { FaCompass } from "react-icons/fa";
@@ -113,6 +113,24 @@ const AdminSidebar = ({ collapsed, settingData }) => {
       label: "Driver",
       onClick: () => navigate("/admin/driver"),
     },
+    {
+      key: "sos",
+      icon: <RiAlarmWarningLine size={18} />,
+      label: "SOS",
+      onClick: () => navigate("/admin/sos"),
+    },
+    {
+      key: "sos-settings",
+      icon: <RiAlarmWarningLine size={18} />,
+      label: "SOS Settings",
+      onClick: () => navigate("/admin/sos-settings"),
+    },
+    {
+      key: "report-issues",
+      icon: <RiFileWarningLine size={18} />,
+      label: "Report Issues",
+      onClick: () => navigate("/admin/report-issues"),
+    },
 
     {
       key: "settings",
@@ -158,6 +176,33 @@ const AdminSidebar = ({ collapsed, settingData }) => {
             },
           ],
         },
+        {
+          key: "driver-cms",
+          icon: <RiEBike2Fill size={18} />,
+          label: "Driver CMS",
+          children: [
+            {
+              key: "driver-terms-and-conditions",
+              label: "Terms & Conditions",
+              onClick: () => navigate("/admin/terms-and-conditions/driver"),
+            },
+            {
+              key: "driver-privacy-policy",
+              label: "Privacy Policy",
+              onClick: () => navigate("/admin/privacy-policy/driver"),
+            },
+            {
+              key: "driver-refund-policy",
+              label: "Refund Policy",
+              onClick: () => navigate("/admin/refund-policy/driver"),
+            },
+            {
+              key: "driver-about-us",
+              label: "About Us",
+              onClick: () => navigate("/admin/about-us/driver"),
+            },
+          ],
+        },
       ],
     },
 
@@ -189,7 +234,10 @@ const AdminSidebar = ({ collapsed, settingData }) => {
       className="shadow-md border-r"
       style={{ height: "100vh", position: "sticky", top: 0, overflow: "auto" }}
     >
-      <div className="flex items-center justify-center py-4">
+      <div 
+        className="flex items-center justify-center py-4 cursor-pointer hover:bg-gray-50 transition-colors duration-200 rounded-lg mx-2"
+        onClick={() => navigate("/admin")}
+      >
         <Avatar
           size={collapsed ? 40 : 64}
           src={
@@ -200,7 +248,7 @@ const AdminSidebar = ({ collapsed, settingData }) => {
           className="transition-all duration-300"
         />
         {!collapsed && (
-          <span className="ml-3 font-semibold text-2xl">
+          <span className="ml-3 font-semibold text-2xl hover:text-blue-600 transition-colors duration-200">
             {settingData.brandName}
           </span>
         )}

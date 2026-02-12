@@ -67,6 +67,8 @@ function Charges() {
         formData.append("googleMapApiKey", values.googleMapApiKey);
         formData.append("razorpayKeyId", values.razorpayKeyId);
         formData.append("razorpayKeySecret", values.razorpayKeySecret);
+        formData.append("deliveryCharge", values.deliveryCharge);
+        formData.append("handlingCharge", values.handlingCharge);
 
         if (values.image && values.image.file) {
             formData.append("image", values.image.file);
@@ -114,6 +116,8 @@ function Charges() {
                         googleMapApiKey: settingData.googleMapApiKey,
                         razorpayKeyId: settingData.razorpayKeyId,
                         razorpayKeySecret: settingData.razorpayKeySecret,
+                        deliveryCharge: settingData.deliveryCharge,
+                        handlingCharge: settingData.handlingCharge,
                     }}
                     className="max-w-2xl"
                 >
@@ -268,6 +272,42 @@ function Charges() {
                             >
                                 {/* <Input placeholder="Enter Address" size='large' /> */}
                                 <TextArea rows={5} placeholder="Enter Term and Conditions here ..." required />
+                            </Form.Item>
+                        </Col>
+                    </Row>
+
+                    {/* delivery and handling charges */}
+                    <Row gutter={16}>
+                        <Col span={12}>
+                            <Form.Item
+                                label="Delivery Charge (₹)"
+                                name="deliveryCharge"
+                                rules={[{ required: true, message: 'Please enter delivery charge' }]}
+                            >
+                                <InputNumber
+                                    min={0}
+                                    style={{ width: '100%' }}
+                                    placeholder="Enter delivery charge"
+                                    size='large'
+                                    formatter={value => `₹ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                                    parser={value => value.replace(/₹\s?|(,*)/g, '')}
+                                />
+                            </Form.Item>
+                        </Col>
+                        <Col span={12}>
+                            <Form.Item
+                                label="Handling Charge (₹)"
+                                name="handlingCharge"
+                                rules={[{ required: true, message: 'Please enter handling charge' }]}
+                            >
+                                <InputNumber
+                                    min={0}
+                                    style={{ width: '100%' }}
+                                    placeholder="Enter handling charge"
+                                    size='large'
+                                    formatter={value => `₹ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                                    parser={value => value.replace(/₹\s?|(,*)/g, '')}
+                                />
                             </Form.Item>
                         </Col>
                     </Row>

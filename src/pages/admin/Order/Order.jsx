@@ -37,7 +37,7 @@ function Order() {
 
   const tabs = [
     tabWithCount("Pending Orders", "pending"),
-    tabWithCount("Accepted Orders", "accepted"),
+    tabWithCount("Processing Orders", "processing"),
     tabWithCount("Ready Orders", "ready"),
     tabWithCount("Assigned Orders", "shipped"),
     tabWithCount("Running Orders", "out_for_delivery"),

@@ -62,20 +62,20 @@ export const getDriverWalletRequests = async () => {
     }
 }
 
-export const settleDriverWallet = async (driverId, amount = 0, remarks = '') => {
+export const settleDriverWallet = async (driverId, amount = 0, remarks = '', type = 'wallet') => {
     try {
-        console.log('API: Settling driver wallet for:', driverId, 'amount:', amount, 'remarks:', remarks);
+        console.log('API: Settling driver wallet for:', driverId, 'amount:', amount, 'remarks:', remarks, 'type:', type);
         const response = await axiosInstance.post(`/api/admin/driver/${driverId}/wallet/settle`, {
             amount,
             remarks,
-            type: 'wallet'
+            type
         });
         console.log('API: Wallet settlement response:', response.data);
-        message.success('Driver wallet settled successfully');
+        message.success(`Driver ${type} settled successfully`);
         return response.data;
     } catch (error) {
         console.error('API: Error settling driver wallet:', error);
-        message.error('Error settling driver wallet');
+        message.error(`Error settling driver ${type}`);
         throw error;
     }
 }
@@ -107,6 +107,17 @@ export const getDriverStatistics = async () => {
         return response.data;
     } catch (error) {
         message.error('Error fetching driver statistics');
+        throw error;
+    }
+}
+
+export const approveDriver = async (driverId, approvalData) => {
+    try {
+        const response = await axiosInstance.patch(`/api/admin/driver/approve/${driverId}`, approvalData);
+        message.success('Driver approved successfully');
+        return response.data;
+    } catch (error) {
+        message.error('Error approving driver');
         throw error;
     }
 }

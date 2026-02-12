@@ -2,9 +2,11 @@ import React from 'react';
 import { Spin, Statistic } from 'antd';
 import CountUp from 'react-countup';
 import { motion } from 'motion/react';
+import { useNavigate } from 'react-router';
 import { RiAdvertisementLine, RiUserLine, RiStoreLine, RiRestaurantLine, RiShoppingBasketLine, RiFolderLine, RiStackLine } from 'react-icons/ri';
 
 function StaticsData({ data, loading }) {
+    const navigate = useNavigate();
     const formatter = value => <CountUp end={value} separator="," />;
 
     const cardVariants = {
@@ -13,13 +15,17 @@ function StaticsData({ data, loading }) {
     };
 
     const staticData = [
-        { name: "Banner", icon: <RiAdvertisementLine />, count: data.banner || 10, color: "#6366f1" },
-        { name: "Category", icon: <RiFolderLine />, count: data.category, color: "#10b981" },
-        { name: "Sub Category", icon: <RiStackLine />, count: data.subCategory, color: "#f59e0b" },
-        { name: "Product", icon: <RiStoreLine />, count: data.products || 3, color: "#3b82f6" },
-        { name: "Total Order", icon: <RiStoreLine />, count: data.order || 10, color: "#3b82f6" },
-        { name: "User", icon: <RiUserLine />, count: data.user || 100, color: "#ec4899" },
+        { name: "Banner", icon: <RiAdvertisementLine />, count: data.banner || 10, color: "#6366f1", route: "/admin/banner" },
+        { name: "Category", icon: <RiFolderLine />, count: data.category, color: "#10b981", route: "/admin/category" },
+        { name: "Sub Category", icon: <RiStackLine />, count: data.subCategory, color: "#f59e0b", route: "/admin/category" },
+        { name: "Product", icon: <RiStoreLine />, count: data.products || 3, color: "#3b82f6", route: "/admin/product" },
+        { name: "Total Order", icon: <RiStoreLine />, count: data.order || 10, color: "#3b82f6", route: "/admin/order" },
+        { name: "User", icon: <RiUserLine />, count: data.user || 100, color: "#ec4899", route: "/admin/user" },
     ];
+
+    const handleCardClick = (route) => {
+        navigate(route);
+    };
 
     if (loading) return <Spin size='large' />
 
@@ -32,7 +38,8 @@ function StaticsData({ data, loading }) {
                     initial="hidden"
                     animate="visible"
                     transition={{ delay: index * 0.1 }}
-                    className="relative group overflow-hidden rounded-2xl bg-white dark:bg-gray-800 shadow-lg hover:shadow-xl transition-shadow duration-300"
+                    className="relative group overflow-hidden rounded-2xl bg-white dark:bg-gray-800 shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer hover:scale-105"
+                    onClick={() => handleCardClick(data.route)}
                 >
                     <div
                         className="absolute inset-0 opacity-10 transition-opacity duration-300 group-hover:opacity-20"

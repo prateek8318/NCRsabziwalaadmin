@@ -6,6 +6,7 @@ import DriverTable from './components/DriverTable';
 import WalletRequests from './components/WalletRequests';
 import AddDriverModal from './components/AddDriverModel';
 import EditDriverModal from './components/EditDriverModal';
+import DriverDetailsModal from './components/DriverDetailsModal';
 import { getAllDrivers, getDriverStatistics } from '../../../services/admin/apiDriver';
 
 function DriverManagement() {
@@ -35,6 +36,8 @@ function DriverManagement() {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editMode, setEditMode] = useState(false);
     const [selectedDriver, setSelectedDriver] = useState(null);
+    const [isDetailsModalVisible, setIsDetailsModalVisible] = useState(false);
+    const [selectedDriverId, setSelectedDriverId] = useState(null);
     const fetchDrivers = async () => {
         setLoading(true);
         try {
@@ -140,6 +143,16 @@ function DriverManagement() {
         setSelectedDriver(driver);
         setEditMode(!!driver);
         setIsModalOpen(true);
+    };
+
+    const openDetailsModal = (driver) => {
+        setSelectedDriverId(driver._id);
+        setIsDetailsModalVisible(true);
+    };
+
+    const closeDetailsModal = () => {
+        setIsDetailsModalVisible(false);
+        setSelectedDriverId(null);
     };
 
     const closeModal = (refresh = false) => {
@@ -338,8 +351,7 @@ function DriverManagement() {
                                         loading={loading}
                                         searchText={searchText}
                                         data={drivers}
-                                        onEdit={openModal}
-                                        onDelete={handleDelete}
+                                        onView={openDetailsModal}
                                         onSettleSuccess={onSettleSuccess}
                                     />
 
@@ -357,6 +369,12 @@ function DriverManagement() {
                                             handleCancel={() => closeModal(false)}
                                         />
                                     )}
+
+                                    <DriverDetailsModal
+                                        visible={isDetailsModalVisible}
+                                        onClose={closeDetailsModal}
+                                        driverId={selectedDriverId}
+                                    />
                                 </>
                             )
                         },

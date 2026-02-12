@@ -27,4 +27,24 @@ console.log(adminToken,"ffffffffffffffff......")
     return config;
 });
 
+// Add response interceptor to handle 401 errors
+axiosInstance.interceptors.response.use(
+    (response) => response,
+    (error) => {
+        // Handle 401 Unauthorized errors
+        if (error.response?.status === 401) {
+            console.log('401 Error - Token expired or invalid');
+            // Clear tokens
+            localStorage.removeItem('adminToken');
+            localStorage.removeItem('vendorToken');
+            
+            // Redirect to login page
+            if (window.location.pathname !== '/admin/login') {
+                window.location.href = '/admin/login';
+            }
+        }
+        return Promise.reject(error);
+    }
+);
+
 export default axiosInstance;

@@ -28,6 +28,9 @@ import Order from "./pages/admin/Order/Order";
 import OrderDetailsPage from "./pages/admin/Order/components/OrderDetailsPage";
 import Coupon from "./pages/admin/Coupon/Coupon";
 import Driver from "./pages/admin/Driver/Driver";
+import Sos from "./pages/admin/Sos/Sos";
+import SosSettings from "./pages/admin/SosSettings/SosSettings";
+import ReportIssues from "./pages/admin/ReportIssues/ReportIssues";
 import ProductFlags from "./pages/admin/ProductFlags/ProductFlags";
 import Explore from "./pages/admin/Explore/Explore";
 import ExploreSection from "./pages/admin/ExploreSection/ExploreSection";
@@ -80,6 +83,9 @@ function App() {
           <Route path="subcategory/:categoryId" element={<SubCategory />} />
           <Route path="coupons" element={<Coupon />} />
           <Route path="driver" element={<Driver />} />
+          <Route path="sos" element={<Sos />} />
+          <Route path="sos-settings" element={<SosSettings />} />
+          <Route path="report-issues" element={<ReportIssues />} />
           <Route path="products/:produtSlug" element={<ProductDetails />} />
           <Route path="product-flags" element={<ProductFlags />} />
           <Route path="shop" element={<Shop />} />
