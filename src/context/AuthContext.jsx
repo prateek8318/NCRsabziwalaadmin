@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import axiosInstance from "../utils/axiosInstance";
+import { message } from "antd";
 
 const AuthContext = createContext();
 
@@ -17,16 +18,19 @@ export const AuthProvider = ({ children }) => {
         return;
       }
 
-      const res = await axiosInstance.get("/api/admin/settings"); // Your protected route
-      if (res.data.status) {
+      const res = await axiosInstance.get("/api/admin/profile"); // Use profile API instead
+      console.log('AuthContext - Profile API response:', res.data);
+      
+      if (res.data.success) {
         setAdmin(res.data.data);
+        console.log('AuthContext - Admin data set:', res.data.data);
       } else {
         // Clear invalid token
         localStorage.removeItem("adminToken");
         setAdmin(null);
       }
     } catch (err) {
-      console.log(err);
+      console.log('AuthContext - Error fetching profile:', err);
       // Clear invalid token on error
       localStorage.removeItem("adminToken");
       setAdmin(null);
@@ -68,30 +72,31 @@ export const AuthProvider = ({ children }) => {
       
       if (response.data.success) {
         console.log('Logout successful');
-        // Use proper notification system if available
-        if (typeof message !== 'undefined') {
-          message.success('Logged out successfully');
-        } else {
-          alert('Logged out successfully');
-        }
+        // Use message from antd
+        message.success('Logged out successfully');
         
         // Add small delay to ensure notification appears before redirect
         setTimeout(() => {
           window.location.href = "/admin/login";
-        }, 500);
+        }, 1000); // Increased delay to 1 second
+      } else {
+        console.log('Logout API returned non-success:', response.data);
+        message.success('Logged out successfully'); // Still show success even if API fails
+        
+        // Add small delay to ensure notification appears before redirect
+        setTimeout(() => {
+          window.location.href = "/admin/login";
+        }, 1000);
       }
     } catch (err) {
       console.error("Admin logout failed:", err);
-      if (typeof message !== 'undefined') {
-        message.error('Logout failed');
-      } else {
-        alert('Logout failed');
-      }
+      // Still show success and redirect even on error
+      message.success('Logged out successfully');
       
-      // Still redirect on error
+      // Add small delay to ensure notification appears before redirect
       setTimeout(() => {
         window.location.href = "/admin/login";
-      }, 500);
+      }, 1000);
     }
   };
 

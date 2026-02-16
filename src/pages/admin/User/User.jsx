@@ -9,7 +9,7 @@ import { getAllUser } from '../../../services/admin/apiUser'
 
 function User() {
     const [user, setUser] = useState([]);
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(true); // Start with true to show loading initially
     const [searchText, setSearchText] = useState('');
 
     const fetchUser = async () => {
@@ -65,7 +65,7 @@ function User() {
                     Add Sub Category
                 </Button> */}
             </div>
-            <UserTable searchText={searchText} onDelete={handleDelete} data={user}/>
+            <UserTable searchText={searchText} onDelete={handleDelete} data={user} loading={loading}/>
 
             {/* modal */}
             {/* <AddSubCategoryModel

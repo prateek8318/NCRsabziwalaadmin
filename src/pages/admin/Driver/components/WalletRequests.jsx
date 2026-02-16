@@ -8,6 +8,7 @@ const WalletRequests = () => {
     const [loading, setLoading] = useState(false);
     const [selectedRequest, setSelectedRequest] = useState(null);
     const [actionModalVisible, setActionModalVisible] = useState(false);
+    const [viewModalVisible, setViewModalVisible] = useState(false);
     const [action, setAction] = useState('approve');
     const [remark, setRemark] = useState('');
 
@@ -42,6 +43,12 @@ const WalletRequests = () => {
         setAction(actionType);
         setRemark('');
         setActionModalVisible(true);
+    };
+
+    const handleView = (request) => {
+        setSelectedRequest(request);
+        console.log('Request data:', request); // Debug log to see data structure
+        setViewModalVisible(true);
     };
 
     const handleConfirmAction = async () => {
@@ -140,6 +147,7 @@ const WalletRequests = () => {
                         <Button
                             type="default"
                             icon={<FaEye />}
+                            onClick={() => handleView(record)}
                             size="small"
                         >
                             View
@@ -256,6 +264,97 @@ const WalletRequests = () => {
                         borderRadius: '6px'
                     }}>
                         <strong>Note:</strong> This will approve the request and settle the amount to the driver's wallet.
+                    </div>
+                )}
+            </Modal>
+
+            {/* View Details Modal */}
+            <Modal
+                title="Wallet Request Details"
+                open={viewModalVisible}
+                onCancel={() => setViewModalVisible(false)}
+                footer={[
+                    <Button key="close" onClick={() => setViewModalVisible(false)}>
+                        Close
+                    </Button>
+                ]}
+                width={600}
+            >
+                {selectedRequest && (
+                    <div style={{ lineHeight: '1.8' }}>
+                        <Row gutter={[16, 16]}>
+                            <Col span={12}>
+                                <div><strong>Request ID:</strong></div>
+                                <div style={{ marginBottom: '12px', fontFamily: 'monospace' }}>
+                                    {selectedRequest._id}
+                                </div>
+                            </Col>
+                            <Col span={12}>
+                                <div><strong>Status:</strong></div>
+                                <div style={{ marginBottom: '12px' }}>
+                                    <Tag color={getStatusColor(selectedRequest.status)}>
+                                        {selectedRequest.status?.toUpperCase()}
+                                    </Tag>
+                                </div>
+                            </Col>
+                            <Col span={12}>
+                                <div><strong>Driver Name:</strong></div>
+                                <div style={{ marginBottom: '12px' }}>
+                                    {selectedRequest.name || 'Not available'}
+                                </div>
+                            </Col>
+                            <Col span={12}>
+                                <div><strong>Driver Email:</strong></div>
+                                <div style={{ marginBottom: '12px' }}>
+                                    {selectedRequest.email || 'Not available'}
+                                </div>
+                            </Col>
+                            <Col span={12}>
+                                <div><strong>Driver Mobile:</strong></div>
+                                <div style={{ marginBottom: '12px' }}>
+                                    {selectedRequest.mobileNo || 'Not available'}
+                                </div>
+                            </Col>
+                            <Col span={12}>
+                                <div><strong>Current Wallet Balance:</strong></div>
+                                <div style={{ marginBottom: '12px' }}>
+                                    <Tag color="blue">₹{selectedRequest.wallet_balance || 0}</Tag>
+                                </div>
+                            </Col>
+                            <Col span={12}>
+                                <div><strong>Amount Requested:</strong></div>
+                                <div style={{ marginBottom: '12px' }}>
+                                    <Tag color="green">₹{selectedRequest.amount_requested}</Tag>
+                                </div>
+                            </Col>
+                            <Col span={12}>
+                                <div><strong>Request Date:</strong></div>
+                                <div style={{ marginBottom: '12px' }}>
+                                    {new Date(selectedRequest.request_date).toLocaleString()}
+                                </div>
+                            </Col>
+                            {selectedRequest.processed_date && (
+                                <Col span={12}>
+                                    <div><strong>Processed Date:</strong></div>
+                                    <div style={{ marginBottom: '12px' }}>
+                                        {new Date(selectedRequest.processed_date).toLocaleString()}
+                                    </div>
+                                </Col>
+                            )}
+                            {selectedRequest.remark && (
+                                <Col span={24}>
+                                    <div><strong>Remark:</strong></div>
+                                    <div style={{ 
+                                        marginBottom: '12px',
+                                        padding: '8px',
+                                        backgroundColor: '#f5f5f5',
+                                        borderRadius: '4px'
+                                    }}>
+                                        {selectedRequest.remark}
+                                    </div>
+                                </Col>
+                            )}
+                        </Row>
                     </div>
                 )}
             </Modal>

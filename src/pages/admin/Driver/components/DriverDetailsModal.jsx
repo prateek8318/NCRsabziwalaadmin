@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Modal, Card, Row, Col, Statistic, Table, Tag, Avatar, Divider, Descriptions, Badge, Spin, Button, Image, Space, InputNumber, Input, message } from 'antd';
 import { FaUserTie, FaBox, FaCheckCircle, FaClock, FaTruck, FaTimesCircle, FaUndo, FaEye, FaFileImage } from 'react-icons/fa';
-import { getDriverDetails, approveDriver, settleDriverWallet } from '../../../../services/admin/apiDriver';
+import { getDriverDetails, approveDriver, settleDriverWallet, getDriverOrderStatistics } from '../../../../services/admin/apiDriver';
 import { convertDate } from '../../../../utils/formatDate';
 import { RiEBike2Fill } from 'react-icons/ri';
 
@@ -34,9 +34,45 @@ const DriverDetailsModal = ({ visible, onClose, driverId }) => {
         try {
             const response = await getDriverDetails(driverId);
             console.log('Complete API Response:', response); // Debug log
+            console.log('Response keys:', Object.keys(response || {})); // Debug log
+            console.log('Driver object keys:', Object.keys(response?.driver || {})); // Debug log
             
             if (response?.success && response?.driver) {
                 const driver = response.driver;
+                
+                // Fetch order statistics separately
+                let orderStatsData = {
+                    totalOrders: 0,
+                    deliveredOrders: 0,
+                    pendingOrders: 0,
+                    processingOrders: 0,
+                    shippedOrders: 0,
+                    cancelledOrders: 0,
+                    returnedOrders: 0,
+                    totalEarnings: 0
+                };
+                let recentOrdersData = [];
+
+                try {
+                    const orderStatsResponse = await getDriverOrderStatistics(driverId);
+                    console.log('Order statistics response:', orderStatsResponse);
+                    
+                    if (orderStatsResponse?.success) {
+                        orderStatsData = {
+                            totalOrders: orderStatsResponse.totalOrders || 0,
+                            deliveredOrders: orderStatsResponse.deliveredOrders || 0,
+                            pendingOrders: orderStatsResponse.pendingOrders || 0,
+                            processingOrders: orderStatsResponse.processingOrders || 0,
+                            shippedOrders: orderStatsResponse.shippedOrders || 0,
+                            cancelledOrders: orderStatsResponse.cancelledOrders || 0,
+                            returnedOrders: orderStatsResponse.returnedOrders || 0,
+                            totalEarnings: orderStatsResponse.totalEarnings || 0
+                        };
+                        recentOrdersData = orderStatsResponse.recentOrders || [];
+                    }
+                } catch (error) {
+                    console.error('Failed to fetch order statistics:', error);
+                }
                 
                 // Fix image paths - remove "public/" prefix since files are served at root
                 if (driver.image) {
@@ -68,17 +104,8 @@ const DriverDetailsModal = ({ visible, onClose, driverId }) => {
                         upiId: driver.bankDetails?.upiId || '',
                         isVerified: driver.bankDetails?.isVerified || false
                     },
-                    orderStats: {
-                        totalOrders: response.totalOrders || driver.totalOrders || 0,
-                        deliveredOrders: response.deliveredOrders || driver.deliveredOrders || 0,
-                        pendingOrders: response.pendingOrders || driver.pendingOrders || 0,
-                        processingOrders: response.processingOrders || driver.processingOrders || 0,
-                        shippedOrders: response.shippedOrders || driver.shippedOrders || 0,
-                        cancelledOrders: response.cancelledOrders || driver.cancelledOrders || 0,
-                        returnedOrders: response.returnedOrders || driver.returnedOrders || 0,
-                        totalEarnings: response.totalEarnings || driver.totalEarnings || 0
-                    },
-                    recentOrders: response.recentOrders || driver.recentOrders || []
+                    orderStats: orderStatsData,
+                    recentOrders: recentOrdersData
                 };
                 
                 console.log('Final merged driver data:', mergedDriver); // Debug log

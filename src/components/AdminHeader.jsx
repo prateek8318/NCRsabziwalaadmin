@@ -13,7 +13,7 @@ const { Text } = Typography
 function AdminHeader({ collapsed, setCollapsed, background, settingData}) {
     const navigate = useNavigate()
     const [currentTime, setCurrentTime] = useState(new Date())
-    const { adminLogout } = useAuth(); 
+    const { adminLogout, user } = useAuth(); 
 
     useEffect(() => {
         const timer = setInterval(() => {
@@ -25,38 +25,32 @@ function AdminHeader({ collapsed, setCollapsed, background, settingData}) {
     const items = [
         {
             key: '1',
-            label: 'My Account',
-            disabled: true,
-            className: 'bg-gray-100 text-gray-600 cursor-default'
+            label: (
+                <div onClick={() => navigate('/admin/my-account')} className="hover:bg-gray-100 px-4 py-2 cursor-pointer">
+                    <Space className="flex items-center gap-2">
+                        <CgProfile className="text-base" />
+                        <Text>My Account ({user?.name || 'Admin'})</Text>
+                    </Space>
+                </div>
+            ),
         },
         {
             type: 'divider',
             className: 'my-2'
         },
-        // {
-        //     key: '2',
-        //     label: (
-        //         <div onClick={() => navigate('/settings')} className="hover:bg-gray-100 px-4 py-2 cursor-pointer">
-        //             <Space className="flex items-center gap-2">
-        //                 <CgProfile className="text-base" />
-        //                 <Text>Profile</Text>
-        //             </Space>
-        //         </div>
-        //     )
-        // },
-        // {
-        //     key: '3',
-        //     label: (
-        //         <div onClick={() => navigate('/settings')} className="hover:bg-gray-100 px-4 py-2 cursor-pointer">
-        //             <Space className="flex items-center gap-2">
-        //                 <IoSettingsSharp className="text-base" />
-        //                 <Text>Settings</Text>
-        //             </Space>
-        //         </div>
-        //     )
-        // },
         {
-            key: '4',
+            key: '2',
+            label: (
+                <div onClick={() => navigate('/admin/settings')} className="hover:bg-gray-100 px-4 py-2 cursor-pointer">
+                    <Space className="flex items-center gap-2">
+                        <IoSettingsSharp className="text-base" />
+                        <Text>Settings</Text>
+                    </Space>
+                </div>
+            ),
+        },
+        {
+            key: '3',
             label: (
                 <div onClick={() => {
                     adminLogout();
@@ -109,10 +103,13 @@ function AdminHeader({ collapsed, setCollapsed, background, settingData}) {
                         <div className="flex items-center gap-2 p-2 px-3 rounded-lg cursor-pointer transition-colors hover:bg-gray-100">
                             <Avatar
                                 size={36}
+                                src={user?.avatar ? `${import.meta.env.VITE_BASE_URL}/${user.avatar}` : undefined}
                                 className="bg-blue-600 flex items-center justify-center"
                                 icon={<UserOutlined className="text-lg" />}
                             />
-                            <Text strong className="text-blue-600 font-semibold">Admin</Text>
+                            <Text strong className="text-blue-600 font-semibold">
+                                {user?.name || 'Admin'}
+                            </Text>
                             <FaAngleRight className="text-blue-600 text-sm" />
                         </div>
                     </Dropdown>

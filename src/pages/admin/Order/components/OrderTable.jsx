@@ -264,11 +264,38 @@ const OrderTable = ({ searchText, onDelete, type }) => {
     },
   ];
 
-  const filteredItem = orders.filter((item) =>
-    searchText.trim()
-      ? item.orderId?.toLowerCase().includes(searchText.toLowerCase())
-      : true
-  );
+  const filteredItem = orders.filter((item) => {
+    if (!searchText.trim()) return true;
+    
+    const searchLower = searchText.toLowerCase();
+    
+    console.log('Searching for:', searchLower);
+    console.log('Order item:', item);
+    
+    // Check multiple possible ID fields
+    const orderIdMatch = item.orderId?.toLowerCase().includes(searchLower);
+    const idMatch = item._id?.toLowerCase().includes(searchLower);
+    const altIdMatch = item.id?.toLowerCase().includes(searchLower);
+    const orderNumberMatch = item.order_number?.toLowerCase().includes(searchLower);
+    const orderNumber2Match = item.orderNumber?.toLowerCase().includes(searchLower);
+    const stringIdMatch = String(item._id || '').includes(searchLower);
+    const stringOrderIdMatch = String(item.orderId || '').includes(searchLower);
+    
+    const found = orderIdMatch || idMatch || altIdMatch || orderNumberMatch || orderNumber2Match || stringIdMatch || stringOrderIdMatch;
+    
+    console.log('Search matches:', {
+      orderIdMatch,
+      idMatch,
+      altIdMatch,
+      orderNumberMatch,
+      orderNumber2Match,
+      stringIdMatch,
+      stringOrderIdMatch,
+      found
+    });
+    
+    return found;
+  });
 
   return (
     <>

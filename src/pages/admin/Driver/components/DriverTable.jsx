@@ -14,41 +14,59 @@ const DriverTable = ({ searchText, data, onView, loading, onSettleSuccess }) => 
     const [remarks, setRemarks] = useState('');
     const [settleType, setSettleType] = useState('wallet'); // 'wallet' or 'cash'
     const [togglingDriver, setTogglingDriver] = useState(null); // Track which driver is being toggled
+    const [lastUpdateAction, setLastUpdateAction] = useState(null); // Track last action to prevent duplicates
 
     const handleBlockToggle = async (driverId, isBlocked) => {
+        // Generate unique action key with timestamp to prevent duplicates
+        const actionKey = `block-${driverId}-${isBlocked}-${Date.now()}`;
+        
+        if (lastUpdateAction === actionKey) {
+            console.log('Block action already in progress, skipping...');
+            return;
+        }
+        
+        setLastUpdateAction(actionKey);
+        setTogglingDriver(driverId);
+        
         try {
-            setTogglingDriver(driverId); // Set driver being toggled
-            
-            // Immediately update the local data for visual feedback
-            const updatedData = data.map(driver => 
-                driver._id === driverId 
-                    ? { ...driver, isBlocked: !isBlocked }
-                    : driver
-            );
-            
             const response = await toggleDriverBlock(driverId);
-            setTogglingDriver(null); // Clear toggling state
-            message.success("Driver block status updated successfully");
+            setTogglingDriver(null);
+            setLastUpdateAction(null);
+            
+            // Only show success message after API response
+            if (response?.success || response?.status) {
+                message.success("Driver block status updated successfully");
+            }
             if (onSettleSuccess) onSettleSuccess();
         } catch (error) {
-            setTogglingDriver(null); // Clear toggling state on error
+            setTogglingDriver(null);
+            setLastUpdateAction(null);
             message.error("Failed to update driver block status");
         }
     };
 
     const handleVerificationToggle = async (driverId, isRegistered) => {
+        // Generate unique action key with timestamp to prevent duplicates
+        const actionKey = `verification-${driverId}-${isRegistered}-${Date.now()}`;
+        
+        if (lastUpdateAction === actionKey) {
+            console.log('Verification action already in progress, skipping...');
+            return;
+        }
+        
+        setLastUpdateAction(actionKey);
+        
         try {
-            // Immediately update the local data for visual feedback
-            const updatedData = data.map(driver => 
-                driver._id === driverId 
-                    ? { ...driver, isVerified: !isRegistered }
-                    : driver
-            );
+            const response = await toggleDriverVerification(driverId, !isRegistered);
+            setLastUpdateAction(null);
             
-            await toggleDriverVerification(driverId, !isRegistered);
-            message.success("Driver verification status updated successfully");
+            // // Only show success message after API response
+            // if (response?.success || response?.status) {
+            //     message.success("Driver verification status updated successfully");
+            // }
             if (onSettleSuccess) onSettleSuccess();
         } catch (error) {
+            setLastUpdateAction(null);
             message.error("Failed to update driver verification status");
         }
     };
@@ -57,6 +75,7 @@ const DriverTable = ({ searchText, data, onView, loading, onSettleSuccess }) => 
         setSelectedDriver(driver);
         setSettleType(type);
         setSettleAmount(type === 'wallet' ? driver.wallet_balance : driver.cashCollection || 0);
+        setRemarks(''); // Clear remarks when opening modal for different driver
         setIsSettleModalVisible(true);
     };
 
@@ -65,6 +84,7 @@ const DriverTable = ({ searchText, data, onView, loading, onSettleSuccess }) => 
             await settleDriverWallet(selectedDriver._id, settleAmount, remarks, settleType);
             message.success("Settlement done successfully");
             setIsSettleModalVisible(false);
+            setRemarks(''); // Clear remarks after successful settlement
             if (onSettleSuccess) onSettleSuccess();
         } catch (error) {
             // Show more specific error message based on error status
@@ -93,6 +113,18 @@ const DriverTable = ({ searchText, data, onView, loading, onSettleSuccess }) => 
             title: 'Name',
             dataIndex: 'name',
             key: 'name',
+            align: "center"
+        },
+        {
+            title: 'Email',
+            dataIndex: 'email',
+            key: 'email',
+            align: "center"
+        },
+        {
+            title: 'Mobile',
+            dataIndex: 'mobileNo',
+            key: 'mobileNo',
             align: "center"
         },
         {
@@ -223,22 +255,14 @@ const DriverTable = ({ searchText, data, onView, loading, onSettleSuccess }) => 
                     </Tooltip>
                 </Space>
             )
-        }
+        },
     ];
-
-    const filteredData = data.filter((item) =>
-        item.name.toLowerCase().includes(searchText.toLowerCase()) ||
-        item.vehicle?.type?.toLowerCase().includes(searchText.toLowerCase()) ||
-        item.vehicle?.model?.toLowerCase().includes(searchText.toLowerCase()) ||
-        item.vehicle?.registrationNumber?.toLowerCase().includes(searchText.toLowerCase()) ||
-        item.licenseNumber?.toLowerCase().includes(searchText.toLowerCase())
-    );
 
     return (
         <>
             <Table
-                dataSource={filteredData}
                 columns={columns}
+                dataSource={data}
                 rowKey="_id"
                 key={Date.now()} // Force re-render
                 scroll={{ x: true }}
@@ -246,31 +270,53 @@ const DriverTable = ({ searchText, data, onView, loading, onSettleSuccess }) => 
                 size="small"
                 loading={loading}
             />
-
+            
+            {/* Settlement Modal */}
             <Modal
                 title={`Settle ${settleType === 'wallet' ? 'Wallet' : 'Cash'} - ${selectedDriver?.name}`}
                 open={isSettleModalVisible}
-                onCancel={() => setIsSettleModalVisible(false)}
+                onCancel={() => {
+                    setIsSettleModalVisible(false);
+                    setRemarks(''); // Clear remarks when cancelling
+                }}
                 onOk={handleSettle}
                 okText="Settle"
+                confirmLoading={false}
+                width={500}
             >
-                <p>
-                    <strong>Current {settleType === 'wallet' ? 'Wallet' : 'Cash'}: </strong>
-                    ₹{settleType === 'wallet' ? selectedDriver?.wallet_balance : selectedDriver?.cashCollection}
-                </p>
-                <InputNumber
-                    placeholder="Enter amount to settle"
-                    value={settleAmount}
-                    min={0}
-                    onChange={setSettleAmount}
-                    style={{ width: '100%', marginBottom: 10 }}
-                />
-                <Input.TextArea
-                    placeholder="Remarks (optional)"
-                    value={remarks}
-                    onChange={(e) => setRemarks(e.target.value)}
-                    rows={3}
-                />
+                <Space direction="vertical" style={{ width: '100%' }}>
+                    <div>
+                        <strong>Current {settleType === 'wallet' ? 'Wallet' : 'Cash'}: </strong>
+                        <Tag color={settleType === 'wallet' ? 'blue' : 'orange'}>
+                            ₹{settleType === 'wallet' ? selectedDriver?.wallet_balance : selectedDriver?.cashCollection}
+                        </Tag>
+                    </div>
+                    
+                    <div>
+                        <label><strong>Amount to Settle:</strong></label>
+                        <InputNumber
+                            placeholder="Enter amount"
+                            value={settleAmount}
+                            min={0}
+                            max={settleType === 'wallet' ? selectedDriver?.wallet_balance : selectedDriver?.cashCollection}
+                            onChange={setSettleAmount}
+                            style={{ width: '100%', marginTop: 8 }}
+                            formatter={value => `₹ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                            parser={value => value.replace(/₹\s?|(,*)/g, '')}
+                        />
+                    </div>
+
+                    <div>
+                        <label><strong>Remarks:</strong></label>
+                        <Input.TextArea
+                            placeholder="Enter remarks (optional)"
+                            value={remarks}
+                            onChange={(e) => setRemarks(e.target.value)}
+                            rows={3}
+                            style={{ marginTop: 8 }}
+                        />
+                    </div>
+                </Space>
             </Modal>
         </>
     );

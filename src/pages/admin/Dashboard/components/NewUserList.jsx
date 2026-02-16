@@ -30,7 +30,20 @@ function StatusTag({ status }) {
 }
 
 function NewUserList({ data, loading }) {
-    console.log('NewUserList data:', data);
+    console.log('NewUserList data received:', data);
+    console.log('Data type:', typeof data);
+    console.log('Data length:', data?.length);
+    
+    // Sort data by creation date (most recent first)
+    const sortedData = data && Array.isArray(data) ? 
+        [...data].sort((a, b) => {
+            // Try different date fields
+            const dateA = new Date(a.createdAt || a.created_at || a.date || 0);
+            const dateB = new Date(b.createdAt || b.created_at || b.date || 0);
+            return dateB - dateA; // Most recent first
+        }) : [];
+    
+    console.log('Sorted data:', sortedData);
     
     return (
         <Card
@@ -52,7 +65,7 @@ function NewUserList({ data, loading }) {
             >
                 <List
                     itemLayout="horizontal"
-                    dataSource={data}
+                    dataSource={sortedData}
                     split={false}
                     renderItem={item => (
                         <List.Item style={{ padding: '18px 0', borderBottom: '1px solid #f0f0f0' }}>
@@ -78,6 +91,12 @@ function NewUserList({ data, loading }) {
                                 {/* <StatusTag status={item.status} /> */}
                                 <div style={{ marginTop: 6, color: '#757575', fontSize: 15 }}>
                                     {item.mobileNo || item.phone || item.phoneNumber || 'No Phone'}
+                                </div>
+                                <div style={{ marginTop: 4, color: '#999', fontSize: 12 }}>
+                                    {item.createdAt || item.created_at ? 
+                                        new Date(item.createdAt || item.created_at).toLocaleDateString() : 
+                                        'No Date'
+                                    }
                                 </div>
                             </div>
                         </List.Item>

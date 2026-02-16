@@ -4,10 +4,29 @@ import { IoMdEye } from 'react-icons/io';
 import { useNavigate } from 'react-router';
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
-const UserTable = ({ searchText, onDelete, data }) => {
+const UserTable = ({ searchText, onDelete, data, loading }) => {
     const navigate = useNavigate();
 
-    // console.log(data)
+    console.log('UserTable data:', data);
+    console.log('UserTable loading:', loading);
+    console.log('UserTable data length:', data?.length);
+    
+    // Check if data has unique IDs
+    if (data && data.length > 0) {
+        console.log('First user record:', data[0]);
+        console.log('Available ID fields:', {
+            id: data[0].id,
+            _id: data[0]._id,
+            userId: data[0].userId,
+            userId: data[0].userId
+        });
+        
+        // Check for duplicate IDs
+        const ids = data.map(item => item.id || item._id || item.userId);
+        const uniqueIds = [...new Set(ids)];
+        console.log('Total IDs:', ids.length, 'Unique IDs:', uniqueIds.length);
+        console.log('Duplicate IDs:', ids.length !== uniqueIds.length);
+    }
 
 
     const handleViewDetails = (record) => {
@@ -76,10 +95,14 @@ const UserTable = ({ searchText, onDelete, data }) => {
     };
 
     return <Table
+        loading={loading}
         dataSource={data.filter(item => item?.mobileNo?.toLowerCase().includes(searchText.toLowerCase()))}
         // dataSource={transformedData}
         columns={columns}
-        rowKey="id"
+        rowKey={(record, index) => {
+            // Use multiple fallbacks for unique key
+            return record.id || record._id || record.userId || `user-${index}`;
+        }}
         scroll={{ x: true }}
         bordered={false}
         size='small'

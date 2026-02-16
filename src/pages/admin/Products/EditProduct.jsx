@@ -38,6 +38,7 @@ const EditProduct = () => {
   const [subCategories, setSubCategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [initialValues, setInitialValues] = useState(null);
 
   useEffect(() => {
     const fetchMetaData = async () => {
@@ -56,7 +57,7 @@ const EditProduct = () => {
         setSelectedCategory(productData?.categoryId?._id);
 
         // Pre-fill form
-        form.setFieldsValue({
+        const initialFormData = {
           name: productData.name,
           tags: productData.tags || [],
           category: productData.categoryId?._id,
@@ -78,7 +79,12 @@ const EditProduct = () => {
           isFavorite: productData.isFavorite,
           isFeatured: productData.isFeatured,
           isRecommended: productData.isRecommended,
-        });
+        };
+
+        form.setFieldsValue(initialFormData);
+        
+        // Store initial values for change detection
+        setInitialValues(initialFormData);
 
         // Convert existing image URLs to Upload format
         if (productData.images && productData.images.length > 0) {
@@ -106,8 +112,42 @@ const EditProduct = () => {
     form.setFieldsValue({ subcategory: undefined });
   };
 
+  // Function to check if form values have changed
+  const hasFormChanged = (currentValues, initialVals) => {
+    if (!initialVals) return true;
+    
+    // Compare key fields
+    const fieldsToCompare = [
+      'name', 'description', 'category', 'subcategory', 'tags',
+      'isDealOfTheDay', 'isAvailable', 'isReturn', 'isFavorite',
+      'isRecommended', 'isFeatured', 'nutrientValue', 'about',
+      'shelfLife', 'returnPolicy', 'storageTips', 'countryOfOrigin',
+      'customerCare', 'disclaimer', 'seller', 'sellerFssai'
+    ];
+    
+    return fieldsToCompare.some(field => {
+      const currentValue = currentValues[field];
+      const initialValue = initialVals[field];
+      
+      // Handle arrays (like tags)
+      if (Array.isArray(currentValue) || Array.isArray(initialValue)) {
+        return JSON.stringify(currentValue) !== JSON.stringify(initialValue);
+      }
+      
+      // Handle other values
+      return currentValue !== initialValue;
+    });
+  };
+
   const handleFinish = async (values) => {
     try {
+      // Check if any changes were made
+      if (!hasFormChanged(values, initialValues)) {
+        message.info("No changes made to update.");
+        return;
+      }
+
+      console.log('Form changed, proceeding with update...');
       setLoading(true);
       const formData = new FormData();
 

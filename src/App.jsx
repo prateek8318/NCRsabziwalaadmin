@@ -42,6 +42,7 @@ import PrivacyPolicy from "./pages/web/privacyPolicy/PrivacyPolicyPage";
 import Layout from "./layout/Layout";
 import ReturnPolicy from "./pages/web/ReturnPolicyPage";
 import TermsOfServicePage from "./pages/web/TermsOfServicePage";
+import MyAccount from "./pages/admin/MyAccount";
 
 function App() {
   return (
@@ -97,6 +98,7 @@ function App() {
           <Route path="explore/:exploreId" element={<ExploreSectionTable />} />
           <Route path="explore-section" element={<ExploreSection />} />
           <Route path="user" element={<User />} />
+          <Route path="my-account" element={<MyAccount />} />
           <Route path="settings" element={<Settings />} />
           <Route path="settings/profile" element={<Profile />} />
           <Route path="settings/charges" element={<Charges />} />

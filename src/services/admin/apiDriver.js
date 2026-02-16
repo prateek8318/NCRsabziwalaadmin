@@ -122,6 +122,18 @@ export const approveDriver = async (driverId, approvalData) => {
     }
 }
 
+export const getDriverOrderStatistics = async (driverId) => {
+    try {
+        const response = await axiosInstance.get(`/api/admin/driver/statistics?driverId=${driverId}`);
+        console.log('API: Driver order statistics response:', response.data);
+        return response.data;
+    } catch (error) {
+        console.error('API: Error fetching driver order statistics:', error);
+        message.error('Error fetching driver order statistics');
+        throw error;
+    }
+}
+
 export const verifySettleWalletRequest = async (requestId, action, remark) => {
     try {
         const response = await axiosInstance.post(`/api/admin/wallet/request/verify-settle/${requestId}`, {

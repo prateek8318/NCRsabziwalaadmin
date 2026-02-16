@@ -2,6 +2,7 @@ import { Button, Form, Input, Modal, Select, Upload, message } from "antd";
 import { LoadingOutlined, PlusOutlined } from "@ant-design/icons";
 import { useEffect } from "react";
 import { useState } from "react";
+import { updateBanner } from "../../../../services/admin/apiBanner";
 
 const EditBannerModel = ({
   isModalOpen,
@@ -12,6 +13,12 @@ const EditBannerModel = ({
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const [imageUrl, setImageUrl] = useState();
+
+  // Same sections as AddBannerModel
+  const sectionOptions = [
+    { value: 'section1', label: 'Section 1' },
+    { value: 'section2', label: 'Section 2' },
+  ];
 
   const beforeUpload = (file) => {
     const isJpgOrPng = file.type === "image/jpeg" || file.type === "image/png" || file.type === "image/jpg";
@@ -46,18 +53,69 @@ const EditBannerModel = ({
 
   useEffect(() => {
     if (bannerData) {
+      console.log('Banner data received:', bannerData);
+      
+      // Handle different possible field names for section
+      const sectionValue = bannerData.chooeseSection || bannerData.section || bannerData.chooseSection;
+      
       form.setFieldsValue({
         title: bannerData.title,
         image: bannerData.image,
+        chooeseSection: sectionValue,
         status: bannerData.status,
+      });
+      
+      // Set image URL for preview
+      if (bannerData.image) {
+        setImageUrl(`${import.meta.env.VITE_BASE_URL}/${bannerData.image}`);
+      }
+      
+      console.log('Form fields set:', {
+        title: bannerData.title,
+        chooeseSection: sectionValue,
+        image: bannerData.image
       });
     }
   }, [bannerData, form]);
 
-  const onFinish = (values) => {
-    // console.log('Success:', values);
-    // Here you would typically make an API call to update the banner
-    handleOk();
+  const onFinish = async (values) => {
+    setLoading(true);
+    try {
+      console.log('Updating banner with values:', values);
+      console.log('Banner ID:', bannerData._id);
+      
+      // Create FormData for file upload
+      const formData = new FormData();
+      formData.append('title', values.title);
+      formData.append('chooeseSection', values.chooeseSection);
+      
+      // Handle image upload
+      if (imageUrl && imageUrl !== bannerData.image) {
+        // Convert base64 to file if needed
+        if (imageUrl.startsWith('data:')) {
+          const response = await fetch(imageUrl);
+          const blob = await response.blob();
+          const file = new File([blob], 'banner.jpg', { type: 'image/jpeg' });
+          formData.append('image', file);
+        }
+      }
+      
+      // Call update API
+      const response = await updateBanner(bannerData._id, formData);
+      console.log('Update response:', response);
+      
+      if (response.data.status === true || response.data.success === true) {
+        message.success('Banner updated successfully!');
+        handleOk();
+      } else {
+        message.error(response.data.message || 'Failed to update banner');
+      }
+    } catch (error) {
+      console.error('Error updating banner:', error);
+      message.error('Failed to update banner');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const onFinishFailed = (errorInfo) => {
@@ -134,39 +192,15 @@ const EditBannerModel = ({
           />
         </Form.Item>
         <Form.Item
-          label="Service Type"
-          name="serviceType"
-          rules={[{ required: true, message: "Please select a category!" }]}
-        >
-          <Select
-            showSearch
-            placeholder="Service Type"
-            optionFilterProp="label"
-            options={[
-              { value: "food", label: "Food" },
-              { value: "grocery", label: "Grocery" },
-            ]}
-          />
-        </Form.Item>
-        <Form.Item
-          label="Chooese Section"
+          label="Choose Section"
           name="chooeseSection"
           rules={[{ required: true, message: "Please select a category!" }]}
         >
           <Select
             showSearch
-            placeholder="Chooese Section"
+            placeholder="Choose Section"
             optionFilterProp="label"
-            options={[
-              { value: "homeFood", label: "Home (Food)" },
-              { value: "offerFood", label: "Offer (Food)" },
-              { value: "b1g1Food", label: "Buy 1 Get 1 Free (Food)" },
-              { value: "nightCafeGrocery", label: "Night Cafe (Food)" },
-              { value: "homeGrocery", label: "Home (Grocery)" },
-              { value: "store199Grocery", label: "199 Store (Grocery)" },
-              { value: "everydayGrocery", label: "Everyday (Grocery)" },
-              { value: "offerGrocery", label: "Offer (Grocery)" },
-            ]}
+            options={sectionOptions}
           />
         </Form.Item>
         <Form.Item label="Category Image" name="image">

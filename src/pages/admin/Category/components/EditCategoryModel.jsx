@@ -187,6 +187,9 @@ function EditCategoryModel({
           <div style={{ fontSize: "12px", color: "#888" }}>
             Recommended Size: <strong>150 x 150 px</strong>
           </div>
+          <div style={{ fontSize: "12px", color: "#888" }}>
+            Allowed Formats: <strong>JPG, JPEG, PNG (Max 10MB)</strong>
+          </div>
         </Form.Item>
       </Form>
     </Modal>

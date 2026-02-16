@@ -13,6 +13,7 @@ import {
   FaRegUser,
   FaSitemap,
   FaUserClock,
+  FaUser,
 } from "react-icons/fa";
 import {
   IoFastFoodOutline,
@@ -27,6 +28,7 @@ import { RiEBike2Fill, RiAlarmWarningLine, RiFileWarningLine } from 'react-icons
 import { useAuth } from "../context/AuthContext";
 import { MdLocalOffer } from "react-icons/md";
 import { FaCompass } from "react-icons/fa";
+import { Modal, message } from 'antd';
 
 const AdminSidebar = ({ collapsed, settingData }) => {
   const navigate = useNavigate();
@@ -48,6 +50,33 @@ const AdminSidebar = ({ collapsed, settingData }) => {
   }, [collapsed]);
 
   const { adminLogout } = useAuth();
+
+  const handleLogout = () => {
+    Modal.confirm({
+      title: 'Confirm Logout',
+      content: 'Are you sure you want to logout?',
+      okText: 'Yes, Logout',
+      cancelText: 'Cancel',
+      okType: 'danger',
+      onOk: async () => {
+        // Clear all navigation state before logout
+        setOpenKeys([]);
+        
+        await adminLogout();
+        
+        // Show success message
+        message.success('Logged out successfully');
+        
+        // Clear all navigation state and redirect immediately
+        setTimeout(() => {
+          window.location.href = "/admin/login";
+        }, 500);
+      },
+      onCancel: () => {
+        console.log('Logout cancelled');
+      }
+    });
+  };
 
   const menuItems = [
     { type: "divider" },
@@ -208,17 +237,18 @@ const AdminSidebar = ({ collapsed, settingData }) => {
 
     { type: "divider" },
     {
+      key: "my-account",
+      icon: <FaUser size={18} />,
+      label: "My Account",
+      onClick: () => navigate("/admin/my-account"),
+    },
+
+    { type: "divider" },
+    {
       key: "logout",
       icon: <FaArrowRightToBracket size={18} />,
       label: "Logout",
-      onClick: async () => {
-        // Clear all navigation state before logout
-        setOpenKeys([]);
-        
-        await adminLogout();
-        // Clear all navigation state and redirect immediately
-        window.location.href = "/admin/login";
-      },
+      onClick: handleLogout,
     },
   ];
 
