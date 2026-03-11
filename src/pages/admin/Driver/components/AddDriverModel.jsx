@@ -87,7 +87,13 @@ function AddDriverModal({ isModalOpen, handleOk, handleCancel }) {
         <Form.Item
           label="Driver Name"
           name="name"
-          rules={[{ required: true, message: 'Please enter driver name' }]}
+          normalize={(value) => value?.trim()}
+          rules={[
+            { required: true, message: 'Please enter driver name' },
+            { min: 3, message: 'Driver name must be at least 3 characters' },
+            { max: 50, message: 'Driver name cannot exceed 50 characters' },
+            { pattern: /^[A-Za-z0-9 ]+$/, message: 'Only letters, numbers and spaces are allowed' }
+          ]}
         >
           <Input placeholder="e.g. Shyam" />
         </Form.Item>
@@ -106,7 +112,11 @@ function AddDriverModal({ isModalOpen, handleOk, handleCancel }) {
         <Form.Item
           label="Vehicle Model"
           name="vehicleModel"
-          rules={[{ required: true, message: 'Please enter vehicle model' }]}
+          normalize={(value) => value?.trim()}
+          rules={[
+            { required: true, message: 'Please enter vehicle model' },
+            { min: 2, message: 'Vehicle model must be at least 2 characters' }
+          ]}
         >
           <Input placeholder="e.g. Hero" />
         </Form.Item>
@@ -114,7 +124,11 @@ function AddDriverModal({ isModalOpen, handleOk, handleCancel }) {
         <Form.Item
           label="Registration Number"
           name="registrationNumber"
-          rules={[{ required: true, message: 'Please enter registration number' }]}
+          normalize={(value) => value?.trim()}
+          rules={[
+            { required: true, message: 'Please enter registration number' },
+            { pattern: /^[A-Z]{2}[0-9]{1,2}[A-Z]{1,2}[0-9]{4}$/i, message: 'Invalid registration number format (e.g. MH01XY1234)' }
+          ]}
         >
           <Input placeholder="e.g. MH01XY1234" />
         </Form.Item>
@@ -122,7 +136,11 @@ function AddDriverModal({ isModalOpen, handleOk, handleCancel }) {
         <Form.Item
           label="License Number"
           name="licenseNumber"
-          rules={[{ required: true, message: 'Please enter license number' }]}
+          normalize={(value) => value?.trim()}
+          rules={[
+            { required: true, message: 'Please enter license number' },
+            { min: 5, message: 'License number must be at least 5 characters' }
+          ]}
         >
           <Input placeholder="e.g. DL-87654321" />
         </Form.Item>

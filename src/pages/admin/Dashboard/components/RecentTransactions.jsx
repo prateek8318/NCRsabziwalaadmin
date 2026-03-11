@@ -1,8 +1,12 @@
-import { Card, List, Avatar, Badge } from 'antd';
-import { DollarCircleOutlined } from '@ant-design/icons';
+import { Card, Table, Badge, Button, Space, Tooltip } from 'antd';
+import { EyeOutlined } from '@ant-design/icons';
+import { useNavigate } from 'react-router';
 
 function RecentTransactions({ data, loading }) {
-    console.log('RecentTransactions data:', data);
+    // Extract orders array from data object or use data directly if it's already an array
+    const orders = Array.isArray(data) ? data : data?.orders || [];
+    
+    const navigate = useNavigate();
     
     const statusColorMap = {
         pending: 'orange',
@@ -12,74 +16,102 @@ function RecentTransactions({ data, loading }) {
         other: 'gray',
     };
 
+    const columns = [
+        {
+            title: "Order ID",
+            dataIndex: "_id",
+            key: "_id",
+            align: "center",
+            render: (_, record) => (
+                <span style={{ fontWeight: 600, color: '#222' }}>
+                    {record.orderId || record._id || record.id || `Order #${record.orderNumber || 'N/A'}`}
+                </span>
+            ),
+        },
+        {
+            title: "Customer",
+            dataIndex: "shippingAddress",
+            key: "customer",
+            align: "center",
+            render: (_, record) => (
+                record?.shippingAddress?.receiverName || 'N/A'
+            ),
+        },
+        {
+            title: "Amount",
+            dataIndex: "grandTotal",
+            key: "grandTotal",
+            align: "center",
+            render: (_, record) => (
+                <span style={{ color: '#1890ff', fontWeight: 500 }}>
+                    ₹{record.grandTotal || record.finalAmount || record.totalAmount || record.amount || record.total || '0'}
+                </span>
+            ),
+        },
+        {
+            title: "Status",
+            dataIndex: "status",
+            key: "status",
+            align: "center",
+            render: (_, record) => (
+                <Badge
+                    color={statusColorMap[record.status?.toLowerCase() || record.orderStatus?.toLowerCase() || 'gray']}
+                    text={record.status || record.orderStatus || 'Unknown'}
+                />
+            ),
+        },
+        {
+            title: "Date",
+            dataIndex: "createdAt",
+            key: "createdAt",
+            align: "center",
+            render: (date) => date ? new Date(date).toLocaleDateString() : 'N/A',
+        },
+        {
+            title: "Action",
+            key: "action",
+            align: "right",
+            render: (_, record) => (
+                <Space size="small">
+                    <Tooltip title="View Details">
+                        <Button
+                            type="primary"
+                            icon={<EyeOutlined />}
+                            onClick={() => navigate(`/admin/order/${record._id}`)}
+                        />
+                    </Tooltip>
+                </Space>
+            ),
+        },
+    ];
+
     return (
         <Card
-            title="Recent Order"
-            variant="outlined" // ✅ replaces `bordered`
+            title="Recent Orders"
+            variant="outlined"
             style={{
                 borderRadius: 12,
                 borderColor: '#e0e0e0',
                 boxShadow: 'none',
                 minWidth: 320,
             }}
-            styles={{ body: { padding: 18 } }} // ✅ replaces `bodyStyle`
+            styles={{ body: { padding: 18 } }}
             loading={loading}
         >
-            <div
-                style={{
-                    maxHeight: 520,
-                    overflowY: 'auto',
+            <Table
+                dataSource={orders}
+                columns={columns}
+                rowKey="_id"
+                scroll={{ x: true }}
+                bordered={false}
+                size="small"
+                loading={loading}
+                pagination={{
+                    pageSize: 10,
+                    showSizeChanger: false,
+                    showTotal: (total, range) => `${range[0]}-${range[1]} of ${total} items`,
                 }}
-            >
-                <List
-                    itemLayout="horizontal"
-                    dataSource={data || []}
-                    split={false}
-                    locale={{ emptyText: "No transactions" }}
-                    renderItem={(item) => (
-                        <List.Item
-                            style={{
-                                background: '#fafbfc',
-                                borderRadius: 8,
-                                marginBottom: 12,
-                                border: '1px solid #f0f0f0',
-                                padding: '12px 16px',
-                                alignItems: 'center',
-                                boxShadow: '0 1px 3px rgba(0,0,0,0.03)',
-                            }}
-                        >
-                            <List.Item.Meta
-                                avatar={
-                                    <Avatar
-                                        style={{
-                                            background: '#f0f5ff',
-                                            color: '#1890ff',
-                                            border: '1.5px solid #d6e4ff',
-                                        }}
-                                        icon={<DollarCircleOutlined />}
-                                    />
-                                }
-                                title={
-                                    <span style={{ fontWeight: 600, color: '#222' }}>
-                                        {item.orderId || item._id || item.id || `Order #${item.orderNumber || 'N/A'}`}
-                                    </span>
-                                }
-                                description={
-                                    <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                                        <Badge
-                                            color={statusColorMap[item.orderStatus?.toLowerCase() || item.status?.toLowerCase() || 'gray']}
-                                            text={item.orderStatus || item.status || 'Unknown'}
-                                        />
-                                        <span style={{ color: '#1890ff', fontWeight: 500 }}>
-                                            ₹{item.finalAmount || item.totalAmount || item.amount || item.total || '0'}
-                                        </span>
-                                    </span>
-                                }
-                            />
-                        </List.Item>
-                    )}
-                />
-            </div>
+            />
         </Card>
     );
 }

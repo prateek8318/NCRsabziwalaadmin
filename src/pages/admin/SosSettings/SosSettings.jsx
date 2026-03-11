@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Form, Input, Switch, Button, message, Row, Col, Space, Modal, InputNumber, ColorPicker, Select } from 'antd';
+import { Card, Form, Input, Switch, Button, message, Row, Col, Space, Modal, InputNumber, ColorPicker, Select, Popconfirm } from 'antd';
 import { FaPhone, FaWhatsapp, FaShieldAlt, FaFire, FaAmbulance, FaPlus, FaTrash, FaEdit } from 'react-icons/fa';
 import { getSosSettings, updateSosSettings } from '../../../services/admin/apiSosSettings';
 
@@ -10,6 +10,9 @@ function SosSettings() {
     const [loading, setLoading] = useState(false);
     const [updateLoading, setUpdateLoading] = useState(false);
     const [form] = Form.useForm();
+    const [quickDialForm] = Form.useForm();           // ✅ Alag form for Quick Dial Modal
+    const [emergencyContactForm] = Form.useForm();    // ✅ Alag form for Emergency Contact Modal
+
     const [quickDialModalVisible, setQuickDialModalVisible] = useState(false);
     const [editingQuickDial, setEditingQuickDial] = useState(null);
     const [emergencyContactModalVisible, setEmergencyContactModalVisible] = useState(false);
@@ -45,6 +48,10 @@ function SosSettings() {
         }
     };
 
+    // ─────────────────────────────────────────────────────────────
+    // QUICK DIAL — commented out as requested
+    // ─────────────────────────────────────────────────────────────
+    /*
     const addQuickDialButton = () => {
         const newButton = {
             name: '',
@@ -55,47 +62,62 @@ function SosSettings() {
             order: (settings?.quickDialButtons?.length || 0) + 1
         };
         setEditingQuickDial(newButton);
+        quickDialForm.resetFields();
         setQuickDialModalVisible(true);
     };
 
     const editQuickDialButton = (button) => {
         setEditingQuickDial({ ...button });
+        quickDialForm.setFieldsValue({
+            name: button.name || '',
+            mobile: button.mobile || '',
+            icon: button.icon || 'shield',
+            color: button.color || '#0066cc',
+            isActive: button.isActive !== undefined ? button.isActive : true,
+            order: button.order || 1
+        });
         setQuickDialModalVisible(true);
     };
 
-    const saveQuickDialButton = () => {
-        if (!editingQuickDial) return;
+    const saveQuickDialButton = async () => {
+        try {
+            const values = await quickDialForm.validateFields();
+            const updatedQuickDial = [...(settings?.quickDialButtons || [])];
+            const existingIndex = updatedQuickDial.findIndex(btn => btn.order === editingQuickDial?.order);
 
-        const updatedQuickDial = [...(settings?.quickDialButtons || [])];
-        const existingIndex = updatedQuickDial.findIndex(btn => btn.order === editingQuickDial.order);
-        
-        if (existingIndex >= 0) {
-            updatedQuickDial[existingIndex] = editingQuickDial;
-        } else {
-            updatedQuickDial.push(editingQuickDial);
+            if (existingIndex >= 0) {
+                updatedQuickDial[existingIndex] = values;
+            } else {
+                updatedQuickDial.push(values);
+            }
+
+            const updatedSettings = {
+                ...settings,
+                quickDialButtons: updatedQuickDial.sort((a, b) => a.order - b.order)
+            };
+
+            await updateSosSettings(updatedSettings);
+            setSettings(updatedSettings);
+            form.setFieldsValue(updatedSettings);
+            setQuickDialModalVisible(false);
+            setEditingQuickDial(null);
+            message.success('Quick dial button saved successfully');
+        } catch (error) {
+            console.error('Validation error:', error);
         }
-
-        const updatedSettings = {
-            ...settings,
-            quickDialButtons: updatedQuickDial.sort((a, b) => a.order - b.order)
-        };
-
-        setSettings(updatedSettings);
-        form.setFieldsValue(updatedSettings);
-        setQuickDialModalVisible(false);
-        setEditingQuickDial(null);
     };
 
     const deleteQuickDialButton = (order) => {
         const updatedQuickDial = settings?.quickDialButtons?.filter(btn => btn.order !== order) || [];
-        const updatedSettings = {
-            ...settings,
-            quickDialButtons: updatedQuickDial
-        };
+        const updatedSettings = { ...settings, quickDialButtons: updatedQuickDial };
         setSettings(updatedSettings);
         form.setFieldsValue(updatedSettings);
     };
+    */
 
+    // ─────────────────────────────────────────────────────────────
+    // EMERGENCY CONTACTS
+    // ─────────────────────────────────────────────────────────────
     const addEmergencyContact = () => {
         const newContact = {
             name: '',
@@ -103,58 +125,79 @@ function SosSettings() {
             type: 'police',
             isActive: true
         };
-        setEditingEmergencyContact(newContact);
+        setEditingEmergencyContact(null); // null = add mode
+        emergencyContactForm.resetFields();
+        emergencyContactForm.setFieldsValue(newContact);
         setEmergencyContactModalVisible(true);
     };
 
     const editEmergencyContact = (contact) => {
         setEditingEmergencyContact({ ...contact });
+        // ✅ Existing data seedha form mein set ho jaayega
+        emergencyContactForm.setFieldsValue({
+            name: contact.name || '',
+            mobile: contact.mobile || '',
+            type: contact.type || 'police',
+            isActive: contact.isActive !== undefined ? contact.isActive : true
+        });
         setEmergencyContactModalVisible(true);
     };
 
-    const saveEmergencyContact = () => {
-        if (!editingEmergencyContact) return;
+    const saveEmergencyContact = async () => {
+        try {
+            const values = await emergencyContactForm.validateFields();
+            const updatedContacts = [...(settings?.emergencyContacts || [])];
 
-        const updatedContacts = [...(settings?.emergencyContacts || [])];
-        const existingIndex = updatedContacts.findIndex(contact => contact.mobile === editingEmergencyContact.mobile);
-        
-        if (existingIndex >= 0) {
-            updatedContacts[existingIndex] = editingEmergencyContact;
-        } else {
-            updatedContacts.push(editingEmergencyContact);
+            if (editingEmergencyContact) {
+                // Edit mode — original mobile se dhundho
+                const existingIndex = updatedContacts.findIndex(
+                    contact => contact.mobile === editingEmergencyContact.mobile
+                );
+                if (existingIndex >= 0) {
+                    updatedContacts[existingIndex] = values;
+                } else {
+                    updatedContacts.push(values);
+                }
+            } else {
+                // Add mode
+                updatedContacts.push(values);
+            }
+
+            const updatedSettings = { ...settings, emergencyContacts: updatedContacts };
+            await updateSosSettings(updatedSettings);
+            setSettings(updatedSettings);
+            form.setFieldsValue(updatedSettings);
+            setEmergencyContactModalVisible(false);
+            setEditingEmergencyContact(null);
+            message.success(
+                editingEmergencyContact
+                    ? 'Emergency contact updated successfully'
+                    : 'Emergency contact added successfully'
+            );
+        } catch (error) {
+            console.error('Validation error:', error);
         }
-
-        const updatedSettings = {
-            ...settings,
-            emergencyContacts: updatedContacts
-        };
-
-        setSettings(updatedSettings);
-        form.setFieldsValue(updatedSettings);
-        setEmergencyContactModalVisible(false);
-        setEditingEmergencyContact(null);
     };
 
     const deleteEmergencyContact = (mobile) => {
         const updatedContacts = settings?.emergencyContacts?.filter(contact => contact.mobile !== mobile) || [];
-        const updatedSettings = {
-            ...settings,
-            emergencyContacts: updatedContacts
-        };
+        const updatedSettings = { ...settings, emergencyContacts: updatedContacts };
         setSettings(updatedSettings);
         form.setFieldsValue(updatedSettings);
     };
 
     if (loading) {
-        return <div className="flex justify-center items-center h-64">
-            <div>Loading SOS settings...</div>
-        </div>;
+        return (
+            <div className="flex justify-center items-center h-64">
+                <div>Loading SOS settings...</div>
+            </div>
+        );
     }
 
     return (
         <div className="p-6">
             <h2 className="text-2xl font-bold mb-6">SOS Settings</h2>
-            
+
             <Form
                 form={form}
                 layout="vertical"
@@ -177,9 +220,36 @@ function SosSettings() {
                             <Form.Item
                                 label="Emergency Helpline Mobile"
                                 name={['emergencyCall', 'mobile']}
-                                rules={[{ required: true, message: 'Please enter emergency helpline mobile' }]}
+                                rules={[
+                                    { required: true, message: 'Please enter emergency helpline mobile' },
+                                    { pattern: /^[0-9+\s\-()]+$/, message: 'Only numbers, spaces, and + - () characters are allowed' },
+                                    { min: 10, message: 'Mobile number must be at least 10 digits' },
+                                    {
+                                        validator: (_, value) => {
+                                            if (!value) return Promise.resolve();
+                                            const digitsOnly = value.replace(/\D/g, '');
+                                            if (digitsOnly.length > 10) {
+                                                return Promise.reject('Mobile number cannot exceed 10 digits');
+                                            }
+                                            return Promise.resolve();
+                                        }
+                                    }
+                                ]}
                             >
-                                <Input placeholder="Enter emergency helpline mobile" />
+                                <Input
+                                    placeholder="Enter emergency helpline mobile"
+                                    maxLength={10}
+                                    onKeyDown={(e) => {
+                                        const allowedKeys = [
+                                            'Backspace', 'Delete', 'ArrowLeft', 'ArrowRight',
+                                            'Tab', 'Home', 'End', '+', '-', ' ', '(', ')'
+                                        ];
+                                        const isDigit = /^[0-9]$/.test(e.key);
+                                        if (!isDigit && !allowedKeys.includes(e.key)) {
+                                            e.preventDefault();
+                                        }
+                                    }}
+                                />
                             </Form.Item>
                         </Col>
                         <Col span={4}>
@@ -210,9 +280,36 @@ function SosSettings() {
                             <Form.Item
                                 label="WhatsApp Support Mobile"
                                 name={['whatsappSupport', 'mobile']}
-                                rules={[{ required: true, message: 'Please enter WhatsApp support mobile' }]}
+                                rules={[
+                                    { required: true, message: 'Please enter WhatsApp support mobile' },
+                                    { pattern: /^[0-9+\s\-()]+$/, message: 'Only numbers, spaces, and + - () characters are allowed' },
+                                    { min: 10, message: 'Mobile number must be at least 10 digits' },
+                                    {
+                                        validator: (_, value) => {
+                                            if (!value) return Promise.resolve();
+                                            const digitsOnly = value.replace(/\D/g, '');
+                                            if (digitsOnly.length > 10) {
+                                                return Promise.reject('Mobile number cannot exceed 10 digits');
+                                            }
+                                            return Promise.resolve();
+                                        }
+                                    }
+                                ]}
                             >
-                                <Input placeholder="Enter WhatsApp support mobile" />
+                                <Input
+                                    placeholder="Enter WhatsApp support mobile"
+                                    maxLength={10}
+                                    onKeyDown={(e) => {
+                                        const allowedKeys = [
+                                            'Backspace', 'Delete', 'ArrowLeft', 'ArrowRight',
+                                            'Tab', 'Home', 'End', '+', '-', ' ', '(', ')'
+                                        ];
+                                        const isDigit = /^[0-9]$/.test(e.key);
+                                        if (!isDigit && !allowedKeys.includes(e.key)) {
+                                            e.preventDefault();
+                                        }
+                                    }}
+                                />
                             </Form.Item>
                         </Col>
                         <Col span={4}>
@@ -232,25 +329,22 @@ function SosSettings() {
                                 name={['whatsappSupport', 'message']}
                                 rules={[{ required: true, message: 'Please enter WhatsApp message template' }]}
                             >
-                                <TextArea 
-                                    rows={3} 
-                                    placeholder="Enter WhatsApp message template (use [location] for location placeholder)" 
+                                <TextArea
+                                    rows={3}
+                                    placeholder="Enter WhatsApp message template (use [location] for location placeholder)"
                                 />
                             </Form.Item>
                         </Col>
                     </Row>
                 </Card>
 
-                {/* Quick Dial Buttons */}
-                <Card 
-                    title="Quick Dial Buttons" 
+                {/* ── Quick Dial Buttons section — commented out ── */}
+                {/*
+                <Card
+                    title="Quick Dial Buttons"
                     className="mb-6"
                     extra={
-                        <Button 
-                            type="primary" 
-                            icon={<FaPlus />} 
-                            onClick={addQuickDialButton}
-                        >
+                        <Button type="primary" icon={<FaPlus />} onClick={addQuickDialButton}>
                             Add Button
                         </Button>
                     }
@@ -259,7 +353,7 @@ function SosSettings() {
                         {settings?.quickDialButtons?.map((button, index) => (
                             <Col span={8} key={index} className="mb-4">
                                 <Card size="small" className="text-center">
-                                    <div 
+                                    <div
                                         className="mb-2 p-3 rounded"
                                         style={{ backgroundColor: button.color + '20', color: button.color }}
                                     >
@@ -268,38 +362,22 @@ function SosSettings() {
                                     <h4 className="font-medium">{button.name}</h4>
                                     <p className="text-sm text-gray-600">{button.mobile}</p>
                                     <Space className="mt-2">
-                                        <Button 
-                                            size="small" 
-                                            icon={<FaEdit />} 
-                                            onClick={() => editQuickDialButton(button)}
-                                        >
-                                            Edit
-                                        </Button>
-                                        <Button 
-                                            size="small" 
-                                            danger 
-                                            icon={<FaTrash />} 
-                                            onClick={() => deleteQuickDialButton(button.order)}
-                                        >
-                                            Delete
-                                        </Button>
+                                        <Button size="small" icon={<FaEdit />} onClick={() => editQuickDialButton(button)}>Edit</Button>
+                                        <Button size="small" danger icon={<FaTrash />} onClick={() => deleteQuickDialButton(button.order)}>Delete</Button>
                                     </Space>
                                 </Card>
                             </Col>
                         ))}
                     </Row>
                 </Card>
+                */}
 
                 {/* Emergency Contacts */}
-                <Card 
-                    title="Emergency Contacts" 
+                <Card
+                    title="Emergency Contacts"
                     className="mb-6"
                     extra={
-                        <Button 
-                            type="primary" 
-                            icon={<FaPlus />} 
-                            onClick={addEmergencyContact}
-                        >
+                        <Button type="primary" icon={<FaPlus />} onClick={addEmergencyContact}>
                             Add Contact
                         </Button>
                     }
@@ -312,21 +390,21 @@ function SosSettings() {
                                     <p className="text-sm text-gray-600">{contact.mobile}</p>
                                     <p className="text-xs text-gray-500">Type: {contact.type}</p>
                                     <Space className="mt-2">
-                                        <Button 
-                                            size="small" 
-                                            icon={<FaEdit />} 
-                                            onClick={() => editEmergencyContact(contact)}
-                                        >
+                                        <Button size="small" icon={<FaEdit />} onClick={() => editEmergencyContact(contact)}>
                                             Edit
                                         </Button>
-                                        <Button 
-                                            size="small" 
-                                            danger 
-                                            icon={<FaTrash />} 
-                                            onClick={() => deleteEmergencyContact(contact.mobile)}
+                                        <Popconfirm
+                                            title="Delete Contact"
+                                            description="Are you sure you want to delete this contact?"
+                                            onConfirm={() => deleteEmergencyContact(contact.mobile)}
+                                            okText="Yes, Delete"
+                                            cancelText="Cancel"
+                                            okButtonProps={{ danger: true }}
                                         >
-                                            Delete
-                                        </Button>
+                                            <Button size="small" danger icon={<FaTrash />}>
+                                                Delete
+                                            </Button>
+                                        </Popconfirm>
                                     </Space>
                                 </Card>
                             </Col>
@@ -383,99 +461,53 @@ function SosSettings() {
                 </Form.Item>
             </Form>
 
-            {/* Quick Dial Button Modal */}
+            {/* ── Quick Dial Button Modal — commented out ── */}
+            {/*
             <Modal
                 title={editingQuickDial?.name ? "Edit Quick Dial Button" : "Add Quick Dial Button"}
                 open={quickDialModalVisible}
-                onCancel={() => {
-                    setQuickDialModalVisible(false);
-                    setEditingQuickDial(null);
-                }}
+                onCancel={() => { setQuickDialModalVisible(false); setEditingQuickDial(null); }}
                 onOk={saveQuickDialButton}
                 width={600}
             >
-                <Form layout="vertical" initialValues={editingQuickDial}>
-                    <Row gutter={16}>
-                        <Col span={12}>
-                            <Form.Item
-                                label="Button Name"
-                                name="name"
-                                rules={[{ required: true, message: 'Please enter button name' }]}
-                            >
-                                <Input placeholder="Enter button name" />
-                            </Form.Item>
-                        </Col>
-                        <Col span={12}>
-                            <Form.Item
-                                label="Mobile Number"
-                                name="mobile"
-                                rules={[{ required: true, message: 'Please enter mobile number' }]}
-                            >
-                                <Input placeholder="Enter mobile number" />
-                            </Form.Item>
-                        </Col>
-                    </Row>
-                    <Row gutter={16}>
-                        <Col span={8}>
-                            <Form.Item
-                                label="Icon"
-                                name="icon"
-                                rules={[{ required: true, message: 'Please select icon' }]}
-                            >
-                                <Select placeholder="Select icon">
-                                    <Select.Option value="shield">Shield</Select.Option>
-                                    <Select.Option value="fire">Fire</Select.Option>
-                                    <Select.Option value="ambulance">Ambulance</Select.Option>
-                                    <Select.Option value="police">Police</Select.Option>
-                                    <Select.Option value="hospital">Hospital</Select.Option>
-                                </Select>
-                            </Form.Item>
-                        </Col>
-                        <Col span={8}>
-                            <Form.Item
-                                label="Color"
-                                name="color"
-                                rules={[{ required: true, message: 'Please select color' }]}
-                            >
-                                <Input type="color" />
-                            </Form.Item>
-                        </Col>
-                        <Col span={8}>
-                            <Form.Item
-                                label="Order"
-                                name="order"
-                                rules={[{ required: true, message: 'Please enter order' }]}
-                            >
-                                <InputNumber min={1} placeholder="Display order" />
-                            </Form.Item>
-                        </Col>
-                    </Row>
-                    <Row gutter={16}>
-                        <Col span={24}>
-                            <Form.Item
-                                label="Active"
-                                name="isActive"
-                                valuePropName="checked"
-                            >
-                                <Switch />
-                            </Form.Item>
-                        </Col>
-                    </Row>
+                <Form form={quickDialForm} layout="vertical">
+                    ...
                 </Form>
             </Modal>
+            */}
 
             {/* Emergency Contact Modal */}
             <Modal
-                title={editingEmergencyContact?.name ? "Edit Emergency Contact" : "Add Emergency Contact"}
+                title={editingEmergencyContact ? "Edit Emergency Contact" : "Add Emergency Contact"}
                 open={emergencyContactModalVisible}
                 onCancel={() => {
                     setEmergencyContactModalVisible(false);
                     setEditingEmergencyContact(null);
+                    emergencyContactForm.resetFields();
                 }}
-                onOk={saveEmergencyContact}
                 width={600}
+                footer={[
+                    <Button
+                        key="cancel"
+                        onClick={() => {
+                            setEmergencyContactModalVisible(false);
+                            setEditingEmergencyContact(null);
+                            emergencyContactForm.resetFields();
+                        }}
+                    >
+                        Cancel
+                    </Button>,
+                    <Button
+                        key="submit"
+                        type="primary"
+                        onClick={saveEmergencyContact}
+                    >
+                        {editingEmergencyContact ? 'Update' : 'Add'}
+                    </Button>
+                ]}
             >
-                <Form layout="vertical" initialValues={editingEmergencyContact}>
+                {/* ✅ Dedicated form instance — main form se alag */}
+                <Form form={emergencyContactForm} layout="vertical">
                     <Row gutter={16}>
                         <Col span={12}>
                             <Form.Item
@@ -490,9 +522,41 @@ function SosSettings() {
                             <Form.Item
                                 label="Mobile Number"
                                 name="mobile"
-                                rules={[{ required: true, message: 'Please enter mobile number' }]}
+                                rules={[
+                                    { required: true, message: 'Please enter mobile number' },
+                                    {
+                                        pattern: /^[0-9+\s\-()]+$/,
+                                        message: 'Only numbers, spaces, and + - () characters are allowed'
+                                    },
+                                    { min: 10, message: 'Mobile number must be at least 10 digits' },
+                                    // ✅ Max 10 digits validation
+                                    {
+                                        validator: (_, value) => {
+                                            if (!value) return Promise.resolve();
+                                            const digitsOnly = value.replace(/\D/g, '');
+                                            if (digitsOnly.length > 10) {
+                                                return Promise.reject('Mobile number cannot exceed 10 digits');
+                                            }
+                                            return Promise.resolve();
+                                        }
+                                    }
+                                ]}
                             >
-                                <Input placeholder="Enter mobile number" />
+                                {/* ✅ maxLength se 10+ characters type hi nahi ho paayenge */}
+                                <Input
+                                    placeholder="Enter mobile number"
+                                    maxLength={10}
+                                    onKeyDown={(e) => {
+                                        const allowedKeys = [
+                                            'Backspace', 'Delete', 'ArrowLeft', 'ArrowRight',
+                                            'Tab', 'Home', 'End', '+', '-', ' ', '(', ')'
+                                        ];
+                                        const isDigit = /^[0-9]$/.test(e.key);
+                                        if (!isDigit && !allowedKeys.includes(e.key)) {
+                                            e.preventDefault();
+                                        }
+                                    }}
+                                />
                             </Form.Item>
                         </Col>
                     </Row>

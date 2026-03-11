@@ -73,12 +73,14 @@ function Login() {
               <Form.Item
                 label="Email"
                 name="email"
+                normalize={(value) => value?.trim()}
                 rules={[
                   {
                     required: true,
                     message: "Please enter your email!",
                     type: "email",
                   },
+                  { max: 50, message: "Email cannot exceed 50 characters" }
                 ]}
               >
                 <Input size="large" placeholder="Enter your email" />
@@ -89,6 +91,8 @@ function Login() {
                 name="password"
                 rules={[
                   { required: true, message: "Please enter your password!" },
+                  { min: 6, message: "Password must be at least 6 characters" },
+                  { max: 20, message: "Password cannot exceed 20 characters" }
                 ]}
               >
                 <Input.Password size="large" placeholder="********" />

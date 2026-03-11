@@ -16,9 +16,9 @@ const AddBannerModel = ({ isModalOpen, handleOk, handleCancel }) => {
     ];
 
     const beforeUpload = (file) => {
-        const isJpgOrPng = file.type === 'image/jpeg' || file.type === 'image/png' || file.type === 'image/jpg';
-        if (!isJpgOrPng) {
-            message.error('You can only upload JPG, JPEG, or PNG files!');
+        const isPng = file.type === 'image/png';
+        if (!isPng) {
+            message.error('You can only upload PNG files!');
             return false;
         }
         const isLt10M = file.size / 1024 / 1024 < 10;
@@ -183,6 +183,7 @@ const AddBannerModel = ({ isModalOpen, handleOk, handleCancel }) => {
                                 beforeUpload={beforeUpload}
                                 onChange={onChange}
                                 onPreview={onPreview}
+                                accept="image/png"
                                 showUploadList={{ showRemoveIcon: true }}
                                 customRequest={({ onSuccess }) => setTimeout(() => onSuccess("ok"), 0)}
                             >
@@ -193,7 +194,7 @@ const AddBannerModel = ({ isModalOpen, handleOk, handleCancel }) => {
                             <strong>Recommended Size:</strong> 320 x 150 px
                         </div>
                         <div style={{ fontSize: '12px', color: '#888' }}>
-                            <strong>Allowed Formats:</strong> JPG, JPEG, PNG (Max 10MB)
+                            <strong>Allowed Formats:</strong> PNG (Max 10MB)
                         </div>
                     </div>
                 </Form.Item>

@@ -92,6 +92,8 @@ const ProductDetails = () => {
         images,
         status,
         tags,
+        price,
+        mrp,
         details = {},
         info = {},
         variants = []
@@ -209,6 +211,20 @@ const ProductDetails = () => {
                                     <Descriptions.Item label="Name">{name}</Descriptions.Item>
                                     <Descriptions.Item label="Category">{categoryId?.name}</Descriptions.Item>
                                     <Descriptions.Item label="Subcategory">{subCategoryId?.name}</Descriptions.Item>
+                                    <Descriptions.Item label="Price">
+                                        {variants && variants.length > 0 ? (
+                                            <span style={{ color: '#666' }}>Multiple variants available</span>
+                                        ) : (
+                                            <div>
+                                                <span style={{ fontWeight: 'bold', color: '#1890ff' }}>₹{price || 0}</span>
+                                                {mrp && mrp > price && (
+                                                    <span style={{ marginLeft: '8px', textDecoration: 'line-through', color: '#999' }}>
+                                                        ₹{mrp}
+                                                    </span>
+                                                )}
+                                            </div>
+                                        )}
+                                    </Descriptions.Item>
                                     <Descriptions.Item label="Description">{description}</Descriptions.Item>
                                     <Descriptions.Item label="Tags">{tags?.join(', ') || '-'}</Descriptions.Item>
                                     <Descriptions.Item label="Status">

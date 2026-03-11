@@ -44,6 +44,7 @@ function ChangePassword() {
                             prefix={<LockOutlined className="text-gray-400" />}
                             placeholder="Enter current password"
                             className="h-10"
+                            maxLength={20}
                         />
                     </Form.Item>
 
@@ -53,6 +54,7 @@ function ChangePassword() {
                         rules={[
                             { required: true, message: 'Please enter your new password' },
                             { min: 8, message: 'Password must be at least 8 characters' },
+                            { max: 20, message: 'Password cannot exceed 20 characters' },
                             {
                                 pattern: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/,
                                 message: 'Password must contain uppercase, lowercase, number, and special character'
@@ -86,6 +88,7 @@ function ChangePassword() {
                             prefix={<LockOutlined className="text-gray-400" />}
                             placeholder="Confirm new password"
                             className="h-10"
+                            maxLength={20}
                         />
                     </Form.Item>
 

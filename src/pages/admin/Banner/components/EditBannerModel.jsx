@@ -1,5 +1,6 @@
 import { Button, Form, Input, Modal, Select, Upload, message } from "antd";
 import { LoadingOutlined, PlusOutlined } from "@ant-design/icons";
+import ImgCrop from "antd-img-crop";
 import { useEffect } from "react";
 import { useState } from "react";
 import { updateBanner } from "../../../../services/admin/apiBanner";
@@ -13,6 +14,7 @@ const EditBannerModel = ({
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const [imageUrl, setImageUrl] = useState();
+  const [fileList, setFileList] = useState([]);
 
   // Same sections as AddBannerModel
   const sectionOptions = [
@@ -21,9 +23,9 @@ const EditBannerModel = ({
   ];
 
   const beforeUpload = (file) => {
-    const isJpgOrPng = file.type === "image/jpeg" || file.type === "image/png" || file.type === "image/jpg";
-    if (!isJpgOrPng) {
-      message.error("You can only upload JPG, JPEG, or PNG files!");
+    const isPng = file.type === "image/png";
+    if (!isPng) {
+      message.error("You can only upload PNG files!");
       return false;
     }
     const isLt10M = file.size / 1024 / 1024 < 10;
@@ -31,17 +33,26 @@ const EditBannerModel = ({
       message.error("Image must be smaller than 10MB!");
       return false;
     }
-    return false;
+    return true;
   };
 
-  const handleChange = (info) => {
-    if (info.file) {
-      const reader = new FileReader();
-      reader.onload = () => {
-        setImageUrl(reader.result);
-      };
-      reader.readAsDataURL(info.file);
+  const onChange = ({ fileList: newFileList }) => {
+    setFileList(newFileList);
+  };
+
+  const onPreview = async (file) => {
+    let src = file.url;
+    if (!src) {
+      src = await new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file.originFileObj);
+        reader.onload = () => resolve(reader.result);
+      });
     }
+    const image = new Image();
+    image.src = src;
+    const imgWindow = window.open(src);
+    imgWindow?.document.write(image.outerHTML);
   };
 
   const uploadButton = (
@@ -67,7 +78,16 @@ const EditBannerModel = ({
       
       // Set image URL for preview
       if (bannerData.image) {
-        setImageUrl(`${import.meta.env.VITE_BASE_URL}/${bannerData.image}`);
+        const fullImageUrl = `${import.meta.env.VITE_BASE_URL}/${bannerData.image}`;
+        setImageUrl(fullImageUrl);
+        
+        // Set fileList for the Upload component
+        setFileList([{
+          uid: '-1',
+          name: 'banner.png',
+          status: 'done',
+          url: fullImageUrl,
+        }]);
       }
       
       console.log('Form fields set:', {
@@ -89,22 +109,21 @@ const EditBannerModel = ({
       formData.append('title', values.title);
       formData.append('chooeseSection', values.chooeseSection);
       
-      // Handle image upload
-      if (imageUrl && imageUrl !== bannerData.image) {
-        // Convert base64 to file if needed
-        if (imageUrl.startsWith('data:')) {
-          const response = await fetch(imageUrl);
-          const blob = await response.blob();
-          const file = new File([blob], 'banner.jpg', { type: 'image/jpeg' });
-          formData.append('image', file);
-        }
+      // Handle image upload - use cropped file from fileList if available
+      if (fileList.length > 0 && fileList[0].originFileObj) {
+        // New cropped image
+        formData.append('image', fileList[0].originFileObj);
+      } else if (fileList.length > 0 && !fileList[0].originFileObj && bannerData.image) {
+        // No new image uploaded, keep existing one
+        formData.append('existingImage', bannerData.image);
       }
       
       // Call update API
       const response = await updateBanner(bannerData._id, formData);
       console.log('Update response:', response);
       
-      if (response.data.status === true || response.data.success === true) {
+      const success = response.data.status === true || response.data.success === true;
+      if (success) {
         message.success('Banner updated successfully!');
         handleOk();
       } else {
@@ -205,29 +224,32 @@ const EditBannerModel = ({
         </Form.Item>
         <Form.Item label="Category Image" name="image">
           <div>
-            <Upload
-              name="image"
-              listType="picture-card"
-              className="avatar-uploader"
-              showUploadList={false}
-              beforeUpload={beforeUpload}
-              onChange={handleChange}
+            <ImgCrop
+              rotationSlider
+              aspect={320 / 150}
+              quality={1}
+              modalTitle="Crop your banner"
             >
-              {imageUrl ? (
-                <img
-                  src={imageUrl}
-                  alt="Preview"
-                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                />
-              ) : (
-                uploadButton
-              )}
-            </Upload>
+              <Upload
+                name="image"
+                listType="picture-card"
+                className="avatar-uploader"
+                fileList={fileList}
+                beforeUpload={beforeUpload}
+                onChange={onChange}
+                onPreview={onPreview}
+                accept="image/png"
+                showUploadList={{ showRemoveIcon: true }}
+                customRequest={({ onSuccess }) => setTimeout(() => onSuccess("ok"), 0)}
+              >
+                {fileList.length >= 1 ? null : uploadButton}
+              </Upload>
+            </ImgCrop>
             <div style={{ fontSize: '12px', color: '#888', marginTop: '8px' }}>
               <strong>Recommended Size:</strong> 320 x 150 px
             </div>
             <div style={{ fontSize: '12px', color: '#888' }}>
-              <strong>Allowed Formats:</strong> JPG, JPEG, PNG (Max 10MB)
+              <strong>Allowed Formats:</strong> PNG (Max 10MB)
             </div>
           </div>
         </Form.Item>

@@ -87,6 +87,17 @@ function AboutUs() {
     const onFinish = async (values) => {
         setUpdateLoading(true);
         try {
+            // Check if there's already an active item of the same type when creating new
+            if (!editingItem) {
+                const existingActiveItem = data.find(item => 
+                    item.type === values.type && item.isActive
+                );
+                if (existingActiveItem) {
+                    message.warning(`There is already an active ${values.type} About Us page. Please edit the existing one or deactivate it first.`);
+                    return;
+                }
+            }
+
             // Convert plain text to HTML before saving
             const formattedValues = {
                 ...values,
@@ -95,8 +106,10 @@ function AboutUs() {
             
             if (editingItem) {
                 await updateAboutUs(editingItem._id, formattedValues);
+                message.success('About Us updated successfully');
             } else {
                 await createAboutUs(formattedValues);
+                message.success('About Us added successfully');
             }
             setModalVisible(false);
             fetchAboutUs();
@@ -222,11 +235,14 @@ function AboutUs() {
                     onFinish={onFinish}
                 >
                     <Form.Item
-                        label="Title"
-                        name="title"
-                        rules={[{ required: true, message: 'Please enter title' }]}
+                        normalize={(value) => value?.trim()}
+                        rules={[
+                            { required: true, message: 'Please enter title' },
+                            { min: 3, message: 'Title must be at least 3 characters' },
+                            { max: 100, message: 'Title cannot exceed 100 characters' }
+                        ]}
                     >
-                        <Input placeholder="Enter title" />
+                        <Input placeholder="Enter title" maxLength={100} />
                     </Form.Item>
 
                     <Form.Item
@@ -242,8 +258,7 @@ function AboutUs() {
                     </Form.Item>
 
                     <Form.Item
-                        label="Content"
-                        name="content"
+                        normalize={(value) => value?.trim()}
                         rules={[{ required: true, message: 'Please enter content' }]}
                     >
                         <TextArea 
@@ -254,43 +269,54 @@ function AboutUs() {
                     </Form.Item>
 
                     <Form.Item
-                        label="Mission"
-                        name="mission"
-                        rules={[{ required: true, message: 'Please enter mission' }]}
+                        normalize={(value) => value?.trim()}
+                        rules={[
+                            { required: true, message: 'Please enter mission' },
+                            { max: 500, message: 'Mission cannot exceed 500 characters' }
+                        ]}
                     >
-                        <Input placeholder="Enter mission statement" />
+                        <Input placeholder="Enter mission statement" maxLength={500} />
                     </Form.Item>
 
                     <Form.Item
-                        label="Vision"
-                        name="vision"
-                        rules={[{ required: true, message: 'Please enter vision' }]}
+                        normalize={(value) => value?.trim()}
+                        rules={[
+                            { required: true, message: 'Please enter vision' },
+                            { max: 500, message: 'Vision cannot exceed 500 characters' }
+                        ]}
                     >
-                        <Input placeholder="Enter vision statement" />
+                        <Input placeholder="Enter vision statement" maxLength={500} />
                     </Form.Item>
 
                     <Form.Item
-                        label="Contact Email"
-                        name="contactEmail"
-                        rules={[{ required: true, message: 'Please enter contact email' }, { type: 'email', message: 'Please enter valid email' }]}
+                        normalize={(value) => value?.trim()}
+                        rules={[
+                            { required: true, message: 'Please enter contact email' },
+                            { type: 'email', message: 'Please enter valid email' },
+                            { max: 50, message: 'Email cannot exceed 50 characters' }
+                        ]}
                     >
-                        <Input placeholder="Enter contact email" />
+                        <Input placeholder="Enter contact email" maxLength={50} />
                     </Form.Item>
 
                     <Form.Item
-                        label="Contact Phone"
-                        name="contactPhone"
-                        rules={[{ required: true, message: 'Please enter contact phone' }]}
+                        normalize={(value) => value?.trim()}
+                        rules={[
+                            { required: true, message: 'Please enter contact phone' },
+                            { pattern: /^[0-9]{10}$/, message: 'Please enter valid 10-digit phone number' }
+                        ]}
                     >
-                        <Input placeholder="Enter contact phone" />
+                        <Input placeholder="Enter contact phone" maxLength={10} />
                     </Form.Item>
 
                     <Form.Item
-                        label="Address"
-                        name="address"
-                        rules={[{ required: true, message: 'Please enter address' }]}
+                        normalize={(value) => value?.trim()}
+                        rules={[
+                            { required: true, message: 'Please enter address' },
+                            { max: 500, message: 'Address cannot exceed 500 characters' }
+                        ]}
                     >
-                        <TextArea rows={3} placeholder="Enter address" />
+                        <TextArea rows={3} placeholder="Enter address" maxLength={500} />
                     </Form.Item>
 
                     <Form.Item

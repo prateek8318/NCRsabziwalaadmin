@@ -89,45 +89,64 @@ function Profile() {
                             <Form.Item
                                 label="Full Name"
                                 name="name"
-                                rules={[{ required: true, message: 'Please input your name!' }]}
+                                normalize={(value) => value?.trim()}
+                                rules={[
+                                    { required: true, message: 'Please input your name!' },
+                                    { min: 3, message: 'Name must be at least 3 characters' },
+                                    { max: 50, message: 'Name cannot exceed 50 characters' }
+                                ]}
                             >
-                                <Input />
+                                <Input maxLength={50} />
                             </Form.Item>
 
                             <Form.Item
                                 label="Email"
                                 name="email"
+                                normalize={(value) => value?.trim()}
                                 rules={[
                                     { required: true, message: 'Please input your email!' },
-                                    { type: 'email', message: 'Please enter a valid email!' }
+                                    { type: 'email', message: 'Please enter a valid email!' },
+                                    { max: 50, message: 'Email cannot exceed 50 characters' }
                                 ]}
                             >
-                                <Input />
+                                <Input maxLength={50} />
                             </Form.Item>
 
                             <Form.Item
                                 label="Phone Number"
                                 name="phone"
-                                rules={[{ required: true, message: 'Please input your phone number!' }]}
+                                normalize={(value) => value?.trim()}
+                                rules={[
+                                    { required: true, message: 'Please input your phone number!' },
+                                    { pattern: /^[0-9]{10}$/, message: 'Please enter valid 10-digit phone number' }
+                                ]}
                             >
-                                <Input />
+                                <Input maxLength={10} />
                             </Form.Item>
 
                             <Form.Item
                                 label="Address"
                                 name="address"
-                                rules={[{ required: true, message: 'Please input your address!' }]}
+                                normalize={(value) => value?.trim()}
+                                rules={[
+                                    { required: true, message: 'Please input your address!' },
+                                    { max: 200, message: 'Address cannot exceed 200 characters' }
+                                ]}
                             >
-                                <Input />
+                                <Input maxLength={200} />
                             </Form.Item>
                         </div>
 
                         <Form.Item
                             label="Bio"
                             name="bio"
-                            rules={[{ required: true, message: 'Please input your bio!' }]}
+                            normalize={(value) => value?.trim()}
+                            rules={[
+                                { required: true, message: 'Please input your bio!' },
+                                { max: 500, message: 'Bio cannot exceed 500 characters' }
+                            ]}
                         >
-                            <Input.TextArea rows={4} />
+                            <Input.TextArea rows={4} maxLength={500} />
                         </Form.Item>
 
                         {isEditing && (

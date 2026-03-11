@@ -82,6 +82,17 @@ function PrivacyPolicyPage() {
     const onFinish = async (values) => {
         setUpdateLoading(true);
         try {
+            // Check if there's already an active item of the same type when creating new
+            if (!editingItem) {
+                const existingActiveItem = data.find(item => 
+                    item.type === values.type && item.isActive
+                );
+                if (existingActiveItem) {
+                    message.warning(`There is already an active ${values.type} Privacy Policy page. Please edit the existing one or deactivate it first.`);
+                    return;
+                }
+            }
+
             // Convert plain text to HTML before saving
             const formattedValues = {
                 ...values,
@@ -90,8 +101,10 @@ function PrivacyPolicyPage() {
             
             if (editingItem) {
                 await updatePrivacyPolicy(editingItem._id, formattedValues);
+                message.success('Privacy Policy updated successfully');
             } else {
                 await createPrivacyPolicy(formattedValues);
+                message.success('Privacy Policy added successfully');
             }
             setModalVisible(false);
             fetchPrivacyPolicies();
@@ -211,11 +224,14 @@ function PrivacyPolicyPage() {
                     onFinish={onFinish}
                 >
                     <Form.Item
-                        label="Title"
-                        name="title"
-                        rules={[{ required: true, message: 'Please enter title' }]}
+                        normalize={(value) => value?.trim()}
+                        rules={[
+                            { required: true, message: 'Please enter title' },
+                            { min: 3, message: 'Title must be at least 3 characters' },
+                            { max: 100, message: 'Title cannot exceed 100 characters' }
+                        ]}
                     >
-                        <Input placeholder="Enter title" />
+                        <Input placeholder="Enter title" maxLength={100} />
                     </Form.Item>
 
                     <Form.Item
@@ -231,8 +247,7 @@ function PrivacyPolicyPage() {
                     </Form.Item>
 
                     <Form.Item
-                        label="Content"
-                        name="content"
+                        normalize={(value) => value?.trim()}
                         rules={[{ required: true, message: 'Please enter content' }]}
                     >
                         <TextArea 

@@ -33,7 +33,12 @@ function Dashboard() {
     const fetchRecentTransaction = async () => {
         try {
             const res = await getRecentTransaction();
-            setRecentData(res);
+            console.log('API Response from getRecentTransaction:', res);
+            console.log('API Response type:', typeof res);
+            console.log('API Response length:', res?.length);
+            console.log('API Response orders:', res?.orders);
+            console.log('Passing to RecentTransactions:', res?.orders || res);
+            setRecentData(res?.orders || res);
         } catch (error) {
             console.error('Error fetching dashboard data', error);
         } finally {
@@ -44,6 +49,9 @@ function Dashboard() {
     const fetchNewUser = async () => {
         try {
             const res = await getNewUser();
+            console.log('API Response from getNewUser:', res);
+            console.log('API Response type:', typeof res);
+            console.log('API Response length:', res?.length);
             setNewUser(res);
         } catch (error) {
             console.error('Error fetching user data', error);

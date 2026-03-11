@@ -13,7 +13,7 @@ const { Text } = Typography
 function AdminHeader({ collapsed, setCollapsed, background, settingData}) {
     const navigate = useNavigate()
     const [currentTime, setCurrentTime] = useState(new Date())
-    const { adminLogout, user } = useAuth(); 
+    const { adminLogout, admin } = useAuth(); 
 
     useEffect(() => {
         const timer = setInterval(() => {
@@ -29,7 +29,7 @@ function AdminHeader({ collapsed, setCollapsed, background, settingData}) {
                 <div onClick={() => navigate('/admin/my-account')} className="hover:bg-gray-100 px-4 py-2 cursor-pointer">
                     <Space className="flex items-center gap-2">
                         <CgProfile className="text-base" />
-                        <Text>My Account ({user?.name || 'Admin'})</Text>
+                        <Text>My Account ({admin?.name || 'Admin'})</Text>
                     </Space>
                 </div>
             ),
@@ -103,12 +103,12 @@ function AdminHeader({ collapsed, setCollapsed, background, settingData}) {
                         <div className="flex items-center gap-2 p-2 px-3 rounded-lg cursor-pointer transition-colors hover:bg-gray-100">
                             <Avatar
                                 size={36}
-                                src={user?.avatar ? `${import.meta.env.VITE_BASE_URL}/${user.avatar}` : undefined}
+                                src={admin?.image ? `${import.meta.env.VITE_BASE_URL}/${admin.image.replace(/\\/g, '/')}` : undefined}
                                 className="bg-blue-600 flex items-center justify-center"
                                 icon={<UserOutlined className="text-lg" />}
                             />
                             <Text strong className="text-blue-600 font-semibold">
-                                {user?.name || 'Admin'}
+                                {admin?.name || 'Admin'}
                             </Text>
                             <FaAngleRight className="text-blue-600 text-sm" />
                         </div>

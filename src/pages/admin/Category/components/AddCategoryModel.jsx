@@ -97,7 +97,7 @@ function AddCategoryModel({ isModalOpen, handleOk, handleCancel }) {
         <Form.Item
           label="Category Name"
           name="categoryName"
-          // normalize={(value) => value?.trim()}
+          normalize={(value) => value?.trim()}
           rules={[
             { required: true, message: "Please enter category name!" },
 

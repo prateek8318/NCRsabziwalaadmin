@@ -58,31 +58,31 @@ const EditProduct = () => {
 
         // Pre-fill form
         const initialFormData = {
-          name: productData.name,
+          name: productData.name || '',
           tags: productData.tags || [],
-          category: productData.categoryId?._id,
-          subcategory: productData.subCategoryId?._id,
-          nutrientValue: productData.details?.nutrientValue,
-          about: productData.details?.about,
-          description: productData.description,
-          shelfLife: productData.info?.shelfLife,
-          returnPolicy: productData.info?.returnPolicy,
-          storageTips: productData.info?.storageTips,
-          countryOfOrigin: productData.info?.country,
-          customerCare: productData.info?.help,
-          disclaimer: productData.info?.disclaimer,
-          seller: productData.info?.seller,
-          sellerFssai: productData.info?.fssai,
-          isDealOfTheDay: productData.isDealOfTheDay,
-          isAvailable: productData.isAvailable,
-          isReturn: productData.isReturnAvailable,
-          isFavorite: productData.isFavorite,
-          isFeatured: productData.isFeatured,
-          isRecommended: productData.isRecommended,
+          category: productData.categoryId?._id || '',
+          subcategory: productData.subCategoryId?._id || '',
+          price: productData.price || '',
+          mrp: productData.mrp || '',
+          nutrientValue: productData.details?.nutrientValue || '',
+          about: productData.details?.about || '',
+          description: productData.description || '',
+          shelfLife: productData.info?.shelfLife || '',
+          returnPolicy: productData.info?.returnPolicy || '',
+          storageTips: productData.info?.storageTips || '',
+          countryOfOrigin: productData.info?.country || '',
+          customerCare: productData.info?.help || '',
+          disclaimer: productData.info?.disclaimer || '',
+          seller: productData.info?.seller || '',
+          sellerFssai: productData.info?.fssai || '',
+          isDealOfTheDay: productData.isDealOfTheDay || false,
+          isAvailable: productData.isAvailable || false,
+          isReturn: productData.isReturnAvailable || false,
+          isFavorite: productData.isFavorite || false,
+          isFeatured: productData.isFeatured || false,
+          isRecommended: productData.isRecommended || false,
         };
 
-        form.setFieldsValue(initialFormData);
-        
         // Store initial values for change detection
         setInitialValues(initialFormData);
 
@@ -116,38 +116,53 @@ const EditProduct = () => {
   const hasFormChanged = (currentValues, initialVals) => {
     if (!initialVals) return true;
     
+    console.log('Current values:', currentValues);
+    console.log('Initial values:', initialVals);
+    
     // Compare key fields
     const fieldsToCompare = [
-      'name', 'description', 'category', 'subcategory', 'tags',
+      'name', 'description', 'category', 'subcategory', 'tags', 'price', 'mrp',
       'isDealOfTheDay', 'isAvailable', 'isReturn', 'isFavorite',
       'isRecommended', 'isFeatured', 'nutrientValue', 'about',
       'shelfLife', 'returnPolicy', 'storageTips', 'countryOfOrigin',
       'customerCare', 'disclaimer', 'seller', 'sellerFssai'
     ];
     
-    return fieldsToCompare.some(field => {
+    const changedFields = [];
+    fieldsToCompare.forEach(field => {
       const currentValue = currentValues[field];
       const initialValue = initialVals[field];
       
-      // Handle arrays (like tags)
-      if (Array.isArray(currentValue) || Array.isArray(initialValue)) {
-        return JSON.stringify(currentValue) !== JSON.stringify(initialValue);
-      }
+      // Normalize values for comparison (handle undefined, null, empty strings)
+      const normalizedCurrent = currentValue === undefined || currentValue === null ? '' : currentValue;
+      const normalizedInitial = initialValue === undefined || initialValue === null ? '' : initialValue;
       
+      // Handle arrays (like tags)
+      if (Array.isArray(normalizedCurrent) || Array.isArray(normalizedInitial)) {
+        if (JSON.stringify(normalizedCurrent) !== JSON.stringify(normalizedInitial)) {
+          changedFields.push(field);
+        }
+      }
       // Handle other values
-      return currentValue !== initialValue;
+      else if (normalizedCurrent !== normalizedInitial) {
+        changedFields.push(field);
+      }
     });
+    
+    console.log('Changed fields:', changedFields);
+    return changedFields.length > 0;
   };
 
   const handleFinish = async (values) => {
     try {
       // Check if any changes were made
       if (!hasFormChanged(values, initialValues)) {
-        message.info("No changes made to update.");
+        message.info("No changes detected. Product remains unchanged.");
         return;
       }
 
       console.log('Form changed, proceeding with update...');
+      console.log('Form values:', values);
       setLoading(true);
       const formData = new FormData();
 
@@ -155,6 +170,8 @@ const EditProduct = () => {
       formData.append("description", values.description || "");
       formData.append("categoryId", values.category);
       formData.append("subCategoryId", values.subcategory);
+      formData.append("price", values.price || '');
+      formData.append("mrp", values.mrp || '');
       formData.append("tags", JSON.stringify(values.tags || []));
       formData.append("isDealOfTheDay", values.isDealOfTheDay);
       formData.append("isAvailable", values.isAvailable);
@@ -162,6 +179,12 @@ const EditProduct = () => {
       formData.append("isFavorite", values.isFavorite || false);
       formData.append("isRecommended", values.isRecommended || false);
       formData.append("isFeatured", values.isFeatured || false);
+
+      // Log FormData contents for debugging
+      console.log('FormData contents:');
+      for (let [key, value] of formData.entries()) {
+        console.log(key, value);
+      }
 
       formData.append(
         "details",
@@ -192,8 +215,20 @@ const EditProduct = () => {
         }
       });
 
-      await updateProduct(productId, formData);
-      message.success("Product updated successfully.");
+      const response = await updateProduct(productId, formData);
+      console.log('Update response:', response);
+      
+      // Check if price/mrp were actually updated
+      if (response.data && (response.data.price === 0 || response.data.price === '') && (response.data.mrp === 0 || response.data.mrp === '') && (values.price !== '' && values.price !== '0' || values.mrp !== '' && values.mrp !== '0')) {
+        message.warning("Product updated, but price/MRP may not have been saved due to a backend issue. Please contact the development team.");
+      } else {
+        message.success("Product updated successfully.");
+      }
+      
+      // Navigate back after successful update
+      setTimeout(() => {
+        navigate(-1);
+      }, 2000);
     } catch (err) {
       console.error(err);
       message.error("Failed to update product.");
@@ -214,14 +249,14 @@ const EditProduct = () => {
           layout="vertical"
           form={form}
           onFinish={handleFinish}
-          initialValues={{ isDealOfTheDay: false, isAvailable: true }}
+          initialValues={initialValues}
         >
           <Row gutter={16}>
             <Col span={12}>
               <Form.Item
                 name="name"
                 label="Product Name"
-                // normalize={(value) => value?.trim()}
+                normalize={(value) => value?.trim()}
                 rules={[
                   { required: true, message: "Please enter product name!" },
 
@@ -341,12 +376,30 @@ const EditProduct = () => {
           <Divider>Product Details</Divider>
 
           <Row gutter={16}>
-            <Col span={12}>
+            <Col span={6}>
+              <Form.Item name="price" label="Price (₹)" 
+                normalize={(value) => value?.trim()}
+                rules={[{ required: true, message: "Please enter product price!" },
+                { pattern: /^\d+(\.\d{1,2})?$/, message: "Please enter a valid price (e.g. 10.99)" }
+              ]}>
+                <Input type="number" placeholder="0.00" min="0" step="0.01" />
+              </Form.Item>
+            </Col>
+            <Col span={6}>
+              <Form.Item name="mrp" label="MRP (₹)" 
+                normalize={(value) => value?.trim()}
+                rules={[{ required: true, message: "Please enter product MRP!" },
+                { pattern: /^\d+(\.\d{1,2})?$/, message: "Please enter a valid MRP (e.g. 15.99)" }
+              ]}>
+                <Input type="number" placeholder="0.00" min="0" step="0.01" />
+              </Form.Item>
+            </Col>
+            <Col span={6}>
               <Form.Item name="nutrientValue" label="Nutrient Value">
                 <Input.TextArea rows={2} />
               </Form.Item>
             </Col>
-            <Col span={12}>
+            <Col span={6}>
               <Form.Item name="about" label="About the Product">
                 <Input.TextArea rows={2} />
               </Form.Item>

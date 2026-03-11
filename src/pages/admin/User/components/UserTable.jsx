@@ -17,7 +17,6 @@ const UserTable = ({ searchText, onDelete, data, loading }) => {
         console.log('Available ID fields:', {
             id: data[0].id,
             _id: data[0]._id,
-            userId: data[0].userId,
             userId: data[0].userId
         });
         

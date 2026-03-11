@@ -149,7 +149,7 @@ function EditSubCategoryModel({
         <Form.Item
           label="Sub Category Name"
           name="subcategoryName"
-          // normalize={(value) => value?.trim()}
+          normalize={(value) => value?.trim()}
           rules={[
             { required: true, message: "Please enter sub category name!" },
 

@@ -126,10 +126,13 @@ function Charges() {
                         <Col span={12}>
                             <Form.Item
                                 label="Site Name"
-                                name="brandName"
-                                rules={[{ required: true, message: 'Please enter brand name' }]}
+                                normalize={(value) => value?.trim()}
+                                rules={[
+                                    { required: true, message: 'Please enter brand name' },
+                                    { max: 50, message: 'Brand name cannot exceed 50 characters' }
+                                ]}
                             >
-                                <Input placeholder="Enter brand name" size='large' />
+                                <Input placeholder="Enter brand name" size='large' maxLength={50} />
                             </Form.Item>
                         </Col>
                         <Col span={12}>
@@ -248,30 +251,36 @@ function Charges() {
                     <Row gutter={16}>
                         <Col span={8}>
                             <Form.Item
-                                label="Email"
-                                name="email"
-                                rules={[{ required: true, message: 'Please enter email' }]}
+                                normalize={(value) => value?.trim()}
+                                rules={[
+                                    { required: true, message: 'Please enter email' },
+                                    { type: 'email', message: 'Please enter a valid email' },
+                                    { max: 50, message: 'Email cannot exceed 50 characters' }
+                                ]}
                             >
-                                <Input placeholder="Enter Email" size='large' />
+                                <Input placeholder="Enter Email" size='large' maxLength={50} />
                             </Form.Item>
                         </Col>
                         <Col span={8}>
                             <Form.Item
-                                label="Mobile No"
-                                name="mobile"
-                                rules={[{ required: true, message: 'Please enter mobile no' }, { pattern: /^[0-9]+$/, message: 'Only numbers are allowed!' }]}
+                                normalize={(value) => value?.trim()}
+                                rules={[
+                                    { required: true, message: 'Please enter mobile no' }, 
+                                    { pattern: /^[0-9]{10}$/, message: 'Please enter valid 10-digit mobile number' }
+                                ]}
                             >
-                                <Input placeholder="Enter Mobile No." size='large' />
+                                <Input placeholder="Enter Mobile No." size='large' maxLength={10} />
                             </Form.Item>
                         </Col>
                         <Col span={8}>
                             <Form.Item
-                                label="Address"
-                                name="address"
-                                rules={[{ required: true, message: 'Please enter address' }]}
+                                normalize={(value) => value?.trim()}
+                                rules={[
+                                    { required: true, message: 'Please enter address' },
+                                    { max: 500, message: 'Address cannot exceed 500 characters' }
+                                ]}
                             >
-                                {/* <Input placeholder="Enter Address" size='large' /> */}
-                                <TextArea rows={5} placeholder="Enter Term and Conditions here ..." required />
+                                <TextArea rows={5} placeholder="Enter Address here ..." maxLength={500} />
                             </Form.Item>
                         </Col>
                     </Row>

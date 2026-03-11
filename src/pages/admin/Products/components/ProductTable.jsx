@@ -59,6 +59,34 @@ function ProductTable({ searchText, data, onDelete, loading }) {
       render: (_, record) => <>{record?.subCategoryId?.name || "N/A"}</>,
     },
     {
+      title: "Price",
+      dataIndex: "price",
+      key: "price",
+      align: "center",
+      render: (price, record) => {
+        // If product has variants, don't show main price here (variants are shown in variants column)
+        if (record.variants && record.variants.length > 0) {
+          return "See variants";
+        }
+        // If no variants, show the main product price (including 0)
+        return price !== undefined && price !== null ? `₹${price}` : "N/A";
+      },
+    },
+    {
+      title: "MRP",
+      dataIndex: "mrp",
+      key: "mrp",
+      align: "center",
+      render: (mrp, record) => {
+        // If product has variants, don't show main MRP here (variants are shown in variants column)
+        if (record.variants && record.variants.length > 0) {
+          return "See variants";
+        }
+        // If no variants, show the main product MRP (including 0)
+        return mrp !== undefined && mrp !== null ? `₹${mrp}` : "N/A";
+      },
+    },
+    {
       title: "Status",
       dataIndex: "status",
       key: "status",

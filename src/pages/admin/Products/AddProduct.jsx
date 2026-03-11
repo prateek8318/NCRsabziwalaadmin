@@ -59,6 +59,8 @@ const AddProduct = () => {
       formData.append("description", values.description || "");
       formData.append("categoryId", values.category);
       formData.append("subCategoryId", values.subcategory);
+      formData.append("price", values.price || '');
+      formData.append("mrp", values.mrp || '');
       formData.append("tags", JSON.stringify(values.tags || []));
       formData.append("isDealOfTheDay", values.isDealOfTheDay);
       formData.append("isAvailable", values.isAvailable);
@@ -119,14 +121,19 @@ const AddProduct = () => {
           layout="vertical"
           form={form}
           onFinish={handleFinish}
-          initialValues={{ isDealOfTheDay: false, isAvailable: true }}
+          initialValues={{ 
+            isDealOfTheDay: false, 
+            isAvailable: true,
+            price: '',
+            mrp: ''
+          }}
         >
           <Row gutter={16}>
             <Col span={12}>
               <Form.Item
                 name="name"
                 label="Product Name"
-                // normalize={(value) => value?.trim()}
+                normalize={(value) => value?.trim()}
                 rules={[
                   { required: true, message: "Please enter product name!" },
 
@@ -250,12 +257,30 @@ const AddProduct = () => {
           <Divider>Product Details</Divider>
 
           <Row gutter={16}>
-            <Col span={12}>
+            <Col span={6}>
+              <Form.Item name="price" label="Price (₹)" 
+                normalize={(value) => value?.trim()}
+                rules={[{ required: true, message: "Please enter product price!" },
+                { pattern: /^\d+(\.\d{1,2})?$/, message: "Please enter a valid price (e.g. 10.99)" }
+              ]}>
+                <Input type="number" placeholder="0.00" min="0" step="0.01" />
+              </Form.Item>
+            </Col>
+            <Col span={6}>
+              <Form.Item name="mrp" label="MRP (₹)" 
+                normalize={(value) => value?.trim()}
+                rules={[{ required: true, message: "Please enter product MRP!" },
+                { pattern: /^\d+(\.\d{1,2})?$/, message: "Please enter a valid MRP (e.g. 15.99)" }
+              ]}>
+                <Input type="number" placeholder="0.00" min="0" step="0.01" />
+              </Form.Item>
+            </Col>
+            <Col span={6}>
               <Form.Item name="nutrientValue" label="Nutrient Value">
                 <Input.TextArea rows={2} />
               </Form.Item>
             </Col>
-            <Col span={12}>
+            <Col span={6}>
               <Form.Item name="about" label="About the Product">
                 <Input.TextArea rows={2} />
               </Form.Item>

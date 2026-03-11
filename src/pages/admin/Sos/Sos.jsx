@@ -71,6 +71,18 @@ function Sos() {
     };
 
     const handleUpdateSubmit = async (values) => {
+        // Check if any values actually changed
+        const hasChanges = 
+            values.status !== selectedSos.status ||
+            values.adminNotes?.trim() !== (selectedSos.adminNotes || '').trim() ||
+            values.emergencyContact?.name?.trim() !== (selectedSos.emergencyContact?.name || '').trim() ||
+            values.emergencyContact?.mobile?.trim() !== (selectedSos.emergencyContact?.mobile || '').trim();
+
+        if (!hasChanges) {
+            message.info('No changes made to update');
+            return;
+        }
+
         try {
             await updateSosRequest(selectedSos._id, values);
             setUpdateModalVisible(false);
@@ -381,7 +393,7 @@ function Sos() {
                         label="SOS Type"
                         name="sosType"
                     >
-                        <Select placeholder="Select SOS type">
+                        <Select placeholder="Select SOS type" disabled>
                             <Option value="breakdown">Breakdown</Option>
                             <Option value="accident">Accident</Option>
                             <Option value="medical">Medical</Option>
@@ -392,7 +404,19 @@ function Sos() {
                     <Form.Item
                         label="Admin Notes"
                         name="adminNotes"
-                        rules={[{ required: true, message: 'Please enter admin notes' }]}
+                        rules={[{ 
+                            required: true, 
+                            message: 'Please enter admin notes',
+                            validator: (_, value) => {
+                                if (!value || value.trim() === '') {
+                                    return Promise.reject('Admin notes cannot be empty');
+                                }
+                                if (value.trim().length < 5) {
+                                    return Promise.reject('Admin notes must be at least 5 characters');
+                                }
+                                return Promise.resolve();
+                            }
+                        }]}
                     >
                         <TextArea rows={4} placeholder="Enter admin notes..." />
                     </Form.Item>
@@ -402,6 +426,17 @@ function Sos() {
                             <Form.Item
                                 label="Emergency Contact Name"
                                 name={['emergencyContact', 'name']}
+                                rules={[
+                                    { required: true, message: 'Please enter emergency contact name' },
+                                    { 
+                                        pattern: /^[a-zA-Z\s'-]+$/, 
+                                        message: 'Only letters, spaces, hyphens and apostrophes are allowed' 
+                                    },
+                                    { 
+                                        min: 3, 
+                                        message: 'Name must be at least 3 characters' 
+                                    }
+                                ]}
                             >
                                 <Input placeholder="Enter emergency contact name" />
                             </Form.Item>
@@ -410,6 +445,17 @@ function Sos() {
                             <Form.Item
                                 label="Emergency Contact Mobile"
                                 name={['emergencyContact', 'mobile']}
+                                rules={[
+                                    { required: true, message: 'Please enter emergency contact mobile' },
+                                    { 
+                                        pattern: /^[0-9+\s-()]+$/, 
+                                        message: 'Only numbers, spaces, and + - () characters are allowed' 
+                                    },
+                                    { 
+                                        min: 10, 
+                                        message: 'Mobile number must be at least 10 digits' 
+                                    }
+                                ]}
                             >
                                 <Input placeholder="Enter emergency contact mobile" />
                             </Form.Item>

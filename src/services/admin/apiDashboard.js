@@ -14,12 +14,16 @@ export const getDashboard = async () => {
 
 export const getRecentTransaction = async () => {
     const response = await axiosInstance.get(`/api/admin/recent-transactions`);
-    return response.data.data;
+    // Handle different response structures
+    const data = response.data;
+    return data.orders || data.data?.orders || data.data || data || [];
 }
 
 
 
 export const getNewUser = async () => {
     const response = await axiosInstance.get(`/api/admin/new-users`);
-    return response.data.data;
+    // Handle different response structures
+    const data = response.data.data;
+    return data.users || data || [];
 }

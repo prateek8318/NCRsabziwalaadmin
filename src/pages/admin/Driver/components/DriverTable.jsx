@@ -16,6 +16,20 @@ const DriverTable = ({ searchText, data, onView, loading, onSettleSuccess }) => 
     const [togglingDriver, setTogglingDriver] = useState(null); // Track which driver is being toggled
     const [lastUpdateAction, setLastUpdateAction] = useState(null); // Track last action to prevent duplicates
 
+    // Filter data based on search text
+    const filteredData = data.filter(item => {
+        if (!searchText) return true;
+        
+        const searchLower = searchText.toLowerCase();
+        const name = (item.name || '').toLowerCase();
+        const email = (item.email || '').toLowerCase();
+        const mobile = (item.mobileNo || '').toLowerCase();
+        
+        return name.includes(searchLower) || 
+               email.includes(searchLower) || 
+               mobile.includes(searchLower);
+    });
+
     const handleBlockToggle = async (driverId, isBlocked) => {
         // Generate unique action key with timestamp to prevent duplicates
         const actionKey = `block-${driverId}-${isBlocked}-${Date.now()}`;
@@ -203,11 +217,15 @@ const DriverTable = ({ searchText, data, onView, loading, onSettleSuccess }) => 
             align: 'center',
             render: (_, record) => (
                 <Space>
-                    <Tag>₹{record.wallet_balance || 0}</Tag>
-                    <Tooltip title="Settle Wallet">
+                    <Tag color={record.wallet_balance > 0 ? 'blue' : 'default'}>
+                        ₹{record.wallet_balance || 0}
+                    </Tag>
+                    <Tooltip title={record.wallet_balance > 0 ? "Settle Wallet" : "No wallet balance to settle"}>
                         <Button
                             type="default"
                             onClick={() => openSettleModal(record, 'wallet')}
+                            disabled={record.wallet_balance <= 0}
+                            size="small"
                         >
                             Settle
                         </Button>
@@ -262,7 +280,7 @@ const DriverTable = ({ searchText, data, onView, loading, onSettleSuccess }) => 
         <>
             <Table
                 columns={columns}
-                dataSource={data}
+                dataSource={filteredData}
                 rowKey="_id"
                 key={Date.now()} // Force re-render
                 scroll={{ x: true }}
