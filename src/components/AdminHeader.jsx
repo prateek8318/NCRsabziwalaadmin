@@ -6,6 +6,7 @@ import { IoSettingsSharp } from 'react-icons/io5'
 import { CgProfile } from 'react-icons/cg'
 import { useNavigate } from 'react-router'
 import { useAuth } from '../context/AuthContext'
+import NotificationBell from './NotificationBell'
 
 const { Header } = Layout
 const { Text } = Typography
@@ -83,6 +84,7 @@ function AdminHeader({ collapsed, setCollapsed, background, settingData}) {
                 </div>
 
                 <div className="flex items-center gap-6">
+                    <NotificationBell />
                     <div className="sm:flex flex-col items-end hidden">
                         <Text className="text-sm text-gray-600 font-medium">
                             {currentTime.toLocaleDateString('en-US', {
