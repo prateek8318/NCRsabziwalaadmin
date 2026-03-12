@@ -202,6 +202,14 @@ const OrderTable = ({ searchText, onDelete, type }) => {
       align: "center",
       render: (_, record) => {
         // Check multiple possible structures for assigned driver
+        console.log('OrderTable record:', record);
+        console.log('Driver fields in OrderTable:', {
+          assignedDriver: record.assignedDriver,
+          driver: record.driver,
+          assignedDriverId: record.assignedDriverId,
+          driverId: record.driverId
+        });
+        
         const driverName = record.assignedDriver?.name || 
                           record.driver?.name || 
                           record.assignedDriverId?.name ||

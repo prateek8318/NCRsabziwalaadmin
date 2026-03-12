@@ -18,6 +18,7 @@ function Login() {
     setLoading(true);
     try {
       const res = await axiosInstance.post("/api/admin/login", values);
+      console.log('Login response:', res.data);
 
       if (res.data.status && res.data.data?.user) {
         // ✅ Save token in localStorage
@@ -28,11 +29,19 @@ function Login() {
 
         message.success("Login successful!");
         navigate("/admin");
+      } else if (res.data.success && res.data.data) {
+        // ✅ Alternative response structure
+        localStorage.setItem("adminToken", res.data.token);
+        adminLogin(res.data.data);
+        message.success("Login successful!");
+        navigate("/admin");
       } else {
+        console.log('Login failed - Invalid response structure:', res.data);
         message.error("Invalid credentials");
       }
     } catch (error) {
       console.error("Login error:", error);
+      console.error("Error response:", error.response?.data);
       message.error(
         error.response?.data?.message || "Login failed. Please try again."
       );

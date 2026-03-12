@@ -14,6 +14,7 @@ import {
   Col,
   Tag,
   Dropdown,
+  Image,
 } from "antd";
 import { useParams } from "react-router";
 import {
@@ -24,6 +25,8 @@ import {
   downloadInvoice,
 } from "../../../../services/admin/apiOrder";
 import { DownloadOutlined } from "@ant-design/icons";
+
+const BASE_URL = import.meta.env.VITE_BASE_URL;
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -42,6 +45,27 @@ const OrderDetailsPage = () => {
     const fetchData = async (id) => {
       try {
         const response = await getOrderDetails(id);
+        console.log('Order details response:', response);
+        console.log('Order object:', response.order);
+        console.log('Complete order keys:', Object.keys(response.order || {}));
+        console.log('Driver fields:', {
+          assignedDriver: response.order?.assignedDriver,
+          driver: response.order?.driver,
+          assignedDriverId: response.order?.assignedDriverId,
+          driverId: response.order?.driverId
+        });
+        
+        // Check for any other possible driver-related fields
+        const orderKeys = Object.keys(response.order || {});
+        const driverRelatedKeys = orderKeys.filter(key => 
+          key.toLowerCase().includes('driver') || 
+          key.toLowerCase().includes('assigned') ||
+          key.toLowerCase().includes('delivery')
+        );
+        console.log('Driver-related keys found:', driverRelatedKeys);
+        driverRelatedKeys.forEach(key => {
+          console.log(`${key}:`, response.order[key]);
+        });
         setOrder(response.order);
         
         // Fetch available drivers for this order
@@ -128,6 +152,42 @@ const OrderDetailsPage = () => {
 
   const productColumns = [
     {
+      title: "Image",
+      key: "image",
+      render: (_, record) => {
+        const product = record.productId;
+        if (product?.images && product.images.length > 0) {
+          return (
+            <Image
+              width={50}
+              height={50}
+              src={`${BASE_URL}/${product.images[0]}`}
+              alt={product.name || "Product"}
+              style={{ objectFit: "cover", borderRadius: "4px" }}
+              fallback="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMIAAADDCAYAAADQvc6UAAABRWlDQ1BJQ0MgUHJvZmlsZQAAKJFjYGASSSwoyGFhYGDIzSspCnJ3UoiIjFJgf8LAwSDCIMogwMCcmFxc4BgQ4ANUwgCjUcG3awyMIPqyLsis7PPOq3QdDFcvjV3jOD1boQVTPQrgSkktTgbSf4A4LbmgqISBgTEFyFYuLykAsTuAbJEioaOAjDJ9QCpGynyGkOgi0MTxEwNIdGHcUhSCiUoJQoohCCMhCDhBAmWAkigfIUFgIZYQ4AiIhDGEMgQ1QClIeB6CEAgYgSYEwIwIoZJCEGIEAgiAkAzC0DLEBgWBYAYEaRBCiAII0ZCQhCSEB4kEgVCgQJFEOA0KZCAgGGFwGQkHBCAKChChJEOQgTCMBoCCAhCCEAAk0Kdg4JBCiBgKUggCRBIEAICAggSQSAkECkgQJCyCoAAEgsEBCQJBQgECxQKBAgTCMIBBgmGCAgQJBCQJBQoMCRQIEAICBhEACgQKBBQwEAggECxYOBQoMCxQKCRQIEAggECxYOBQoMCxQKCRQIEAggECxYOBQoMCxQKCRQIEAggECxYOBQoMCxQKCRQI"
+            />
+          );
+        }
+        return (
+          <div
+            style={{
+              width: 50,
+              height: 50,
+              backgroundColor: "#f0f0f0",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              borderRadius: "4px",
+              fontSize: "12px",
+              color: "#999",
+            }}
+          >
+            No Image
+          </div>
+        );
+      },
+    },
+    {
       title: "Product",
       key: "product",
       render: (_, record) => record.productId?.name || "N/A",
@@ -178,7 +238,7 @@ const OrderDetailsPage = () => {
           <Card size="small">
             <Descriptions column={2} size="small" bordered>
               <Descriptions.Item label="Order ID">
-                {order.orderId || "N/A"}
+                {order.orderId || order._id || order.id || order.orderNumber || "N/A"}
               </Descriptions.Item>
               <Descriptions.Item label="User">
                 {order.userId?.name} {order.userId?.email || "N/A"}
@@ -239,23 +299,30 @@ const OrderDetailsPage = () => {
                 </Tag>
               </Descriptions.Item>
               <Descriptions.Item label="Driver">
-                {order.assignedDriver?.name || (
+                {order.assignedDriver?.name || order.driver?.name || order.assignedDriverId?.name || order.driverId?.name || (
                   <Text type="secondary">Not Assigned</Text>
                 )}
               </Descriptions.Item>
             </Descriptions>
 
-            {(order.status === 'shipped' || (order.status === 'processing' && !order.assignedDriver)) && !order.assignedDriver && (
-              <Space style={{ marginTop: 16 }}>
-                <Select
-                  style={{ width: 250 }}
-                  placeholder="Select Delivery Boy"
-                  value={selectedDriver}
-                  onChange={(value) => setSelectedDriver(value)}
-                >
-                  {drivers.map((driver) => (
-                    <Option key={driver._id} value={driver._id}>
-                      {driver.name} ({driver.mobileNo || "No Phone"}){" "}
+            {(order.status === 'shipped' || order.status === 'processing') && (
+              <div style={{ marginTop: 16 }}>
+                {(order.assignedDriver || order.driver || order.assignedDriverId || order.driverId) && (
+                  <div style={{ marginBottom: 8 }}>
+                    <Text type="secondary">Current Driver: </Text>
+                    <Text strong>{order.assignedDriver?.name || order.driver?.name || order.assignedDriverId?.name || order.driverId?.name}</Text>
+                  </div>
+                )}
+                <Space>
+                  <Select
+                    style={{ width: 250 }}
+                    placeholder={(order.assignedDriver || order.driver || order.assignedDriverId || order.driverId) ? "Select New Delivery Boy" : "Select Delivery Boy"}
+                    value={selectedDriver}
+                    onChange={(value) => setSelectedDriver(value)}
+                  >
+                    {drivers.map((driver) => (
+                      <Option key={driver._id} value={driver._id}>
+                        {driver.name} ({driver.mobileNo || "No Phone"}){" "}
                       {driver.distanceInMeters
                         ? `(${Math.round(driver.distanceInMeters / 1000)}km)`
                         : ""}
@@ -263,13 +330,14 @@ const OrderDetailsPage = () => {
                   ))}
                 </Select>
                 <Button
-                  type="primary"
-                  loading={assigning}
-                  onClick={handleAssignDriver}
-                >
-                  Assign
-                </Button>
-              </Space>
+                    type="primary"
+                    loading={assigning}
+                    onClick={handleAssignDriver}
+                  >
+                    {(order.assignedDriver || order.driver || order.assignedDriverId || order.driverId) ? "Reassign Driver" : "Assign"}
+                  </Button>
+                </Space>
+              </div>
             )}
           </Card>
 

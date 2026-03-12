@@ -31,8 +31,8 @@ console.log(adminToken,"ffffffffffffffff......")
 axiosInstance.interceptors.response.use(
     (response) => response,
     (error) => {
-        // Handle 401 Unauthorized errors
-        if (error.response?.status === 401) {
+        // Handle 401 Unauthorized errors only for admin routes
+        if (error.response?.status === 401 && error.config?.url?.includes("/api/admin")) {
             console.log('401 Error - Token expired or invalid');
             // Clear tokens
             localStorage.removeItem('adminToken');
@@ -42,6 +42,9 @@ axiosInstance.interceptors.response.use(
             if (window.location.pathname !== '/admin/login') {
                 window.location.href = '/admin/login';
             }
+        } else if (error.response?.status === 404 && error.config?.url?.includes("/api/admin/profile")) {
+            // Special handling for profile 404 - don't logout immediately
+            console.log('Profile API 404 - keeping session alive');
         }
         return Promise.reject(error);
     }
