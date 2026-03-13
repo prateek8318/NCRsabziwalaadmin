@@ -45,32 +45,17 @@ const OrderDetailsPage = () => {
     const fetchData = async (id) => {
       try {
         const response = await getOrderDetails(id);
-        console.log('Order details response:', response);
-        console.log('Order object:', response.order);
-        console.log('Complete order keys:', Object.keys(response.order || {}));
-        console.log('Driver fields:', {
-          assignedDriver: response.order?.assignedDriver,
-          driver: response.order?.driver,
-          assignedDriverId: response.order?.assignedDriverId,
-          driverId: response.order?.driverId
-        });
-        
-        // Check for any other possible driver-related fields
-        const orderKeys = Object.keys(response.order || {});
-        const driverRelatedKeys = orderKeys.filter(key => 
-          key.toLowerCase().includes('driver') || 
-          key.toLowerCase().includes('assigned') ||
-          key.toLowerCase().includes('delivery')
-        );
-        console.log('Driver-related keys found:', driverRelatedKeys);
-        driverRelatedKeys.forEach(key => {
-          console.log(`${key}:`, response.order[key]);
-        });
-        setOrder(response.order);
-        
+        const orderData = response?.data?.data || response?.data?.order || response?.order || response;
+        console.log('--- DEBUG: Full Order Data ---', orderData);
+        if (orderData.products && orderData.products.length > 0) {
+          console.log('--- DEBUG: First Product Record ---', orderData.products[0]);
+          console.log('--- DEBUG: Product Keys ---', Object.keys(orderData.products[0]));
+        }
+        setOrder(orderData);
+
         // Fetch available drivers for this order
         const driversResponse = await getAvailableDriversForOrder(id);
-        setDrivers(driversResponse.data || []);
+        setDrivers(driversResponse?.data?.data || driversResponse?.data || []);
       } catch (error) {
         message.error("Failed to load data.");
       } finally {
@@ -193,6 +178,45 @@ const OrderDetailsPage = () => {
       render: (_, record) => record.productId?.name || "N/A",
     },
     {
+      title: "Weight",
+      key: "variant",
+      render: (val, row) => {
+        const record = row || val;
+        console.log('--- WEIGHT DEEP DEBUG ---');
+        console.log('Record Keys:', Object.keys(record));
+        console.log('Variant ID:', record.variantId);
+        console.log('Product ID Keys:', record.productId ? Object.keys(record.productId) : 'No Product');
+        if (record.productId?.info) console.log('Product Info Keys:', Object.keys(record.productId.info));
+        if (record.productId?.details) console.log('Product Details Keys:', Object.keys(record.productId.details));
+
+        // 1. Try populated variant object
+        const v = record.variant;
+        if (v && typeof v === 'object') {
+          return `${v.name || ''} ${v.unit || ''}`.trim() || v.name || v.unit || "N/A";
+        }
+
+        // 2. Try to find matching variant in productId.variants array
+        const productId = record.productId;
+        const variantId = record.variantId;
+        const variants = productId?.variants || productId?.info?.variants || productId?.details?.variants || productId?.details?.info?.variants;
+
+        if (Array.isArray(variants) && (typeof variantId === 'string' || typeof variantId === 'object')) {
+          const searchId = typeof variantId === 'object' ? variantId._id : variantId;
+          const match = variants.find(vrnt => vrnt._id === searchId);
+          if (match) {
+            return `${match.name || ''} ${match.unit || ''}`.trim() || match.name || match.unit || "N/A";
+          }
+        }
+
+        // 3. Last resort fallbacks
+        if (typeof v === 'string') return v;
+        if (variantId && typeof variantId === 'object' && (variantId.name || variantId.unit)) {
+          return `${variantId.name || ''} ${variantId.unit || ''}`.trim();
+        }
+        return (typeof variantId === 'string' ? variantId : "N/A");
+      }
+    },
+    {
       title: "Quantity",
       dataIndex: "quantity",
       key: "quantity",
@@ -241,7 +265,24 @@ const OrderDetailsPage = () => {
                 {order.orderId || order._id || order.id || order.orderNumber || "N/A"}
               </Descriptions.Item>
               <Descriptions.Item label="User">
-                {order.userId?.name} {order.userId?.email || "N/A"}
+                {(() => {
+                  const user = order.userId || order.user;
+                  const shippingName = order.shippingAddress?.receiverName;
+
+                  // Use priority: Populated User Name > Shipping Name > User ID string
+                  let name = "";
+                  if (user && typeof user === 'object' && user.name) {
+                    name = user.name;
+                  } else if (shippingName) {
+                    name = shippingName;
+                  } else if (user && typeof user === 'string') {
+                    name = user;
+                  } else {
+                    name = "N/A";
+                  }
+
+                  return <Text strong>{name}</Text>;
+                })()}
               </Descriptions.Item>
               {/* <Descriptions.Item label="Delivery Time">
                 {new Date(order.deliveryDate).toLocaleDateString()} at
@@ -253,16 +294,16 @@ const OrderDetailsPage = () => {
                     order.status === "delivered"
                       ? "green"
                       : order.status === "out_for_delivery" || order.status === "processing"
-                      ? "blue"
-                      : order.status === "shipped"
-                      ? "purple"
-                      : order.status === "accepted"
-                      ? "cyan"
-                      : order.status === "ready"
-                      ? "orange"
-                      : order.status === "cancelled"
-                      ? "red"
-                      : "default"
+                        ? "blue"
+                        : order.status === "shipped"
+                          ? "purple"
+                          : order.status === "accepted"
+                            ? "cyan"
+                            : order.status === "ready"
+                              ? "orange"
+                              : order.status === "cancelled"
+                                ? "red"
+                                : "default"
                   }
                 >
                   {order.status?.toUpperCase().replace('_', ' ')}
@@ -323,13 +364,13 @@ const OrderDetailsPage = () => {
                     {drivers.map((driver) => (
                       <Option key={driver._id} value={driver._id}>
                         {driver.name} ({driver.mobileNo || "No Phone"}){" "}
-                      {driver.distanceInMeters
-                        ? `(${Math.round(driver.distanceInMeters / 1000)}km)`
-                        : ""}
-                    </Option>
-                  ))}
-                </Select>
-                <Button
+                        {driver.distanceInMeters
+                          ? `(${Math.round(driver.distanceInMeters / 1000)}km)`
+                          : ""}
+                      </Option>
+                    ))}
+                  </Select>
+                  <Button
                     type="primary"
                     loading={assigning}
                     onClick={handleAssignDriver}
@@ -343,7 +384,6 @@ const OrderDetailsPage = () => {
 
           <Card title="Delivery Address" size="small" style={{ marginTop: 16 }}>
             <Text strong>{order.shippingAddress?.receiverName}</Text>
-            <div>{order.shippingAddress?.receiverNo}</div>
             <div>
               {order.shippingAddress?.houseNoOrFlatNo},{" "}
               {order.shippingAddress?.floor}
@@ -382,8 +422,8 @@ const OrderDetailsPage = () => {
                 -₹
                 {order.couponUsage && order.couponUsage.length > 0
                   ? order.couponUsage
-                      .reduce((sum, c) => sum + (c.discountAmount || 0), 0)
-                      .toFixed(2)
+                    .reduce((sum, c) => sum + (c.discountAmount || 0), 0)
+                    .toFixed(2)
                   : "0"}
               </Descriptions.Item>
               <Descriptions.Item label="Final Total">

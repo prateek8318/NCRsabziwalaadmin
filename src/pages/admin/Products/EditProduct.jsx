@@ -19,6 +19,7 @@ import {
   getProductDetail,
   updateProduct,
 } from "../../../services/admin/apiProduct";
+import { addProductVarient } from "../../../services/admin/apiProductVariant";
 import {
   getAllCategory,
   getAllSubCategory,
@@ -64,6 +65,8 @@ const EditProduct = () => {
           subcategory: productData.subCategoryId?._id || '',
           price: productData.price || '',
           mrp: productData.mrp || '',
+          weight: productData.weight || '',
+          unit: productData.unit || 'pcs',
           nutrientValue: productData.details?.nutrientValue || '',
           about: productData.details?.about || '',
           description: productData.description || '',
@@ -172,6 +175,8 @@ const EditProduct = () => {
       formData.append("subCategoryId", values.subcategory);
       formData.append("price", values.price || '');
       formData.append("mrp", values.mrp || '');
+      formData.append("weight", values.weight || '');
+      formData.append("unit", values.unit || 'pcs');
       formData.append("tags", JSON.stringify(values.tags || []));
       formData.append("isDealOfTheDay", values.isDealOfTheDay);
       formData.append("isAvailable", values.isAvailable);
@@ -335,7 +340,6 @@ const EditProduct = () => {
               <Form.Item
                 name="subcategory"
                 label="Subcategory"
-                rules={[{ required: true }]}
               >
                 <Select placeholder="Select subcategory">
                   {subCategories
@@ -376,30 +380,54 @@ const EditProduct = () => {
           <Divider>Product Details</Divider>
 
           <Row gutter={16}>
-            <Col span={6}>
+            <Col span={4}>
               <Form.Item name="price" label="Price (₹)" 
                 normalize={(value) => value?.trim()}
-                rules={[{ required: true, message: "Please enter product price!" },
+                rules={[
                 { pattern: /^\d+(\.\d{1,2})?$/, message: "Please enter a valid price (e.g. 10.99)" }
               ]}>
                 <Input type="number" placeholder="0.00" min="0" step="0.01" />
               </Form.Item>
             </Col>
-            <Col span={6}>
+            <Col span={4}>
               <Form.Item name="mrp" label="MRP (₹)" 
                 normalize={(value) => value?.trim()}
-                rules={[{ required: true, message: "Please enter product MRP!" },
+                rules={[
                 { pattern: /^\d+(\.\d{1,2})?$/, message: "Please enter a valid MRP (e.g. 15.99)" }
               ]}>
                 <Input type="number" placeholder="0.00" min="0" step="0.01" />
               </Form.Item>
             </Col>
-            <Col span={6}>
+            <Col span={4}>
+              <Form.Item name="weight" label="Weight" 
+                normalize={(value) => value?.trim()}
+                rules={[
+                  { pattern: /^\d+(\.\d{1,2})?$/, message: "Please enter a valid weight (e.g. 500 or 1.5)" }
+                ]}
+              >
+                <Input
+                  placeholder="e.g., 500, 1.5"
+                  addonAfter="g/kg/ml/ltr"
+                />
+              </Form.Item>
+            </Col>
+            <Col span={4}>
+              <Form.Item name="unit" label="Unit">
+                <Select placeholder="Select unit">
+                  <Option value="kg">kg</Option>
+                  <Option value="g">g</Option>
+                  <Option value="ltr">ltr</Option>
+                  <Option value="ml">ml</Option>
+                  <Option value="pcs">pcs</Option>
+                </Select>
+              </Form.Item>
+            </Col>
+            <Col span={4}>
               <Form.Item name="nutrientValue" label="Nutrient Value">
                 <Input.TextArea rows={2} />
               </Form.Item>
             </Col>
-            <Col span={6}>
+            <Col span={4}>
               <Form.Item name="about" label="About the Product">
                 <Input.TextArea rows={2} />
               </Form.Item>

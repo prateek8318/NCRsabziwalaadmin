@@ -87,6 +87,18 @@ function ProductTable({ searchText, data, onDelete, loading }) {
       },
     },
     {
+      title: "Weight",
+      dataIndex: "weight",
+      key: "weight",
+      align: "center",
+      render: (weight, record) => {
+        if (weight && record.unit) {
+          return `${weight} ${record.unit}`;
+        }
+        return weight || "N/A";
+      },
+    },
+    {
       title: "Status",
       dataIndex: "status",
       key: "status",
@@ -109,6 +121,11 @@ function ProductTable({ searchText, data, onDelete, loading }) {
               record.variants.map((variant) => (
                 <div key={variant._id} className="text-xs mb-1">
                   <strong>{variant.name}</strong> - ₹{variant.price}
+                  {variant.weight && (
+                    <span className="ml-2 text-gray-500">
+                      ({variant.weight} {variant.unit})
+                    </span>
+                  )}
                 </div>
               ))
             ) : (

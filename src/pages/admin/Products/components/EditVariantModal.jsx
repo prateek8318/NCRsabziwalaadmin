@@ -55,6 +55,7 @@ const EditVariantModal = ({ visible, onClose, onSave, variant, productId }) => {
         price: variant.price,
         originalPrice: variant.originalPrice,
         discount: variant.discount,
+        weight: variant.weight || "",
       });
 
       const files =
@@ -88,6 +89,7 @@ const EditVariantModal = ({ visible, onClose, onSave, variant, productId }) => {
       formData.append("price", values.price);
       formData.append("originalPrice", values.originalPrice);
       formData.append("discount", values.discount);
+      formData.append("weight", values.weight || "");
 
       setUploading(true);
 
@@ -204,6 +206,20 @@ const EditVariantModal = ({ visible, onClose, onSave, variant, productId }) => {
             <Option value="ml">ml</Option>
             <Option value="pcs">pcs</Option>
           </Select>
+        </Form.Item>
+
+        <Form.Item
+          label="Weight"
+          name="weight"
+          normalize={(value) => value?.trim()}
+          rules={[
+            { pattern: /^\d+(\.\d{1,2})?$/, message: "Please enter a valid weight (e.g. 500 or 1.5)" }
+          ]}
+        >
+          <Input
+            placeholder="e.g., 500, 1.5, 1000"
+            addonAfter="g/kg/ml/ltr"
+          />
         </Form.Item>
 
         <Row gutter={16}>

@@ -2,7 +2,7 @@ import { Col, message, Row, Spin } from 'antd'
 import React, { useEffect, useState } from 'react'
 import StaticsData from './components/StaticsData'
 import { getDashboard, getNewUser, getRecentTransaction } from '../../../services/admin/apiDashboard'
-import SalesGraph from './components/SalesGraph';
+import EarningChart from './components/EarningChart';
 import UserStatus from './components/UserStatus';
 import RecentTransactions from './components/RecentTransactions';
 import NewUserList from './components/NewUserList';
@@ -71,9 +71,9 @@ function Dashboard() {
                         {data ? <StaticsData data={data.countData} loading={loading} /> : <Spin size="large" />}
                     </Col>
 
-                    {/* SalesGraph - 100% width on mobile/tablet, 50% on desktop */}
+                    {/* EarningChart - 100% width on mobile/tablet, 50% on desktop */}
                     <Col xs={24} sm={24} md={12} lg={12}>
-                        <SalesGraph data={data?.salesGraph} />
+                        <EarningChart />
                     </Col>
 
                     {/* NewUserList - 100% width on mobile/tablet, 50% on desktop */}

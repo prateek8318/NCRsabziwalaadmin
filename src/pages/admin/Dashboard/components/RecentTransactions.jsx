@@ -31,7 +31,7 @@ function RecentTransactions({ data, loading }) {
         {
             title: "Customer",
             dataIndex: "shippingAddress",
-            key: "customer",
+            key: "userId?.name",
             align: "center",
             render: (_, record) => (
                 record?.shippingAddress?.receiverName || 'N/A'

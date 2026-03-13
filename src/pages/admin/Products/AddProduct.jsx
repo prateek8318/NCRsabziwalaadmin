@@ -15,6 +15,7 @@ import {
 import { UploadOutlined } from "@ant-design/icons";
 import ImgCrop from "antd-img-crop";
 import { addProduct } from "../../../services/admin/apiProduct";
+import { addProductVarient } from "../../../services/admin/apiProductVariant";
 import {
   getAllCategory,
   getAllSubCategory,
@@ -58,7 +59,7 @@ const AddProduct = () => {
       formData.append("title", values.name);
       formData.append("description", values.description || "");
       formData.append("categoryId", values.category);
-      formData.append("subCategoryId", values.subcategory);
+      formData.append("subCategoryId", values.subcategory || "");
       formData.append("price", values.price || '');
       formData.append("mrp", values.mrp || '');
       formData.append("tags", JSON.stringify(values.tags || []));
@@ -96,7 +97,30 @@ const AddProduct = () => {
         formData.append("images", file.originFileObj);
       });
 
-      await addProduct(formData);
+      const productResponse = await addProduct(formData);
+      const productId = productResponse.data._id;
+
+      // Create default variant
+      if (productId && (values.price || values.mrp)) {
+        const variantFormData = new FormData();
+        variantFormData.append("productId", productId);
+        variantFormData.append("name", "1 unit");
+        variantFormData.append("unit", values.unit || "pcs");
+        variantFormData.append("price", values.price || values.mrp || 0);
+        variantFormData.append("originalPrice", values.mrp || values.price || 0);
+        variantFormData.append("discount", 0);
+        variantFormData.append("stock", 100);
+        variantFormData.append("weight", values.weight || "");
+
+        try {
+          await addProductVarient(productId, variantFormData);
+          console.log("Default variant created successfully");
+        } catch (variantError) {
+          console.error("Failed to create default variant:", variantError);
+          message.warning("Product created but default variant creation failed. You can add variants manually.");
+        }
+      }
+
       message.success("Product submitted successfully.");
       form.resetFields();
       setProductImages([]);
@@ -125,7 +149,9 @@ const AddProduct = () => {
             isDealOfTheDay: false, 
             isAvailable: true,
             price: '',
-            mrp: ''
+            mrp: '',
+            weight: '',
+            unit: 'pcs'
           }}
         >
           <Row gutter={16}>
@@ -216,7 +242,6 @@ const AddProduct = () => {
               <Form.Item
                 name="subcategory"
                 label="Subcategory"
-                rules={[{ required: true }]}
               >
                 <Select placeholder="Select subcategory">
                   {subCategories
@@ -257,30 +282,54 @@ const AddProduct = () => {
           <Divider>Product Details</Divider>
 
           <Row gutter={16}>
-            <Col span={6}>
+            <Col span={4}>
               <Form.Item name="price" label="Price (₹)" 
                 normalize={(value) => value?.trim()}
-                rules={[{ required: true, message: "Please enter product price!" },
+                rules={[
                 { pattern: /^\d+(\.\d{1,2})?$/, message: "Please enter a valid price (e.g. 10.99)" }
               ]}>
                 <Input type="number" placeholder="0.00" min="0" step="0.01" />
               </Form.Item>
             </Col>
-            <Col span={6}>
+            <Col span={4}>
               <Form.Item name="mrp" label="MRP (₹)" 
                 normalize={(value) => value?.trim()}
-                rules={[{ required: true, message: "Please enter product MRP!" },
+                rules={[
                 { pattern: /^\d+(\.\d{1,2})?$/, message: "Please enter a valid MRP (e.g. 15.99)" }
               ]}>
                 <Input type="number" placeholder="0.00" min="0" step="0.01" />
               </Form.Item>
             </Col>
-            <Col span={6}>
+            <Col span={4}>
+              <Form.Item name="weight" label="Weight" 
+                normalize={(value) => value?.trim()}
+                rules={[
+                  { pattern: /^\d+(\.\d{1,2})?$/, message: "Please enter a valid weight (e.g. 500 or 1.5)" }
+                ]}
+              >
+                <Input
+                  placeholder="e.g., 500, 1.5"
+                  addonAfter="g/kg/ml/ltr"
+                />
+              </Form.Item>
+            </Col>
+            <Col span={4}>
+              <Form.Item name="unit" label="Unit">
+                <Select placeholder="Select unit">
+                  <Option value="kg">kg</Option>
+                  <Option value="g">g</Option>
+                  <Option value="ltr">ltr</Option>
+                  <Option value="ml">ml</Option>
+                  <Option value="pcs">pcs</Option>
+                </Select>
+              </Form.Item>
+            </Col>
+            <Col span={4}>
               <Form.Item name="nutrientValue" label="Nutrient Value">
                 <Input.TextArea rows={2} />
               </Form.Item>
             </Col>
-            <Col span={6}>
+            <Col span={4}>
               <Form.Item name="about" label="About the Product">
                 <Input.TextArea rows={2} />
               </Form.Item>
