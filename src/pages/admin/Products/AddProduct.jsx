@@ -62,6 +62,8 @@ const AddProduct = () => {
       formData.append("subCategoryId", values.subcategory || "");
       formData.append("price", values.price || '');
       formData.append("mrp", values.mrp || '');
+      formData.append("weight", values.weight || '');
+      formData.append("unit", values.unit || 'pcs');
       formData.append("tags", JSON.stringify(values.tags || []));
       formData.append("isDealOfTheDay", values.isDealOfTheDay);
       formData.append("isAvailable", values.isAvailable);

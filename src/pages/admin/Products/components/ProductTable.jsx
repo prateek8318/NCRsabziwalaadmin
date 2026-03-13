@@ -92,10 +92,11 @@ function ProductTable({ searchText, data, onDelete, loading }) {
       key: "weight",
       align: "center",
       render: (weight, record) => {
-        if (weight && record.unit) {
-          return `${weight} ${record.unit}`;
+        if (weight) {
+          const unit = record.unit || 'pcs';
+          return `${weight} ${unit}`;
         }
-        return weight || "N/A";
+        return "N/A";
       },
     },
     {

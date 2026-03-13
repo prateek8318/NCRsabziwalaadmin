@@ -15,7 +15,11 @@ const Product = () => {
     const fetchProduct = async () => {
         setLoading(true);
         try {
-            const {data:productList, status} = await getAllProducts();
+            const response = await getAllProducts();
+            const productList = response.data || response;
+            console.log("Broccoli weight field:", productList[0].weight);
+            console.log("Grapes weight field:", productList[1].weight);
+            console.log("Grapes unit field:", productList[1].unit);
             setProducts(productList || []);
         } catch {
             message.error('Error fetching product list');
